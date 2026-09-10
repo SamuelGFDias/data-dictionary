@@ -472,7 +472,7 @@ CI/CD, documentation, and the final constitution-compliance gate.
       push/PR.
 - [ ] T077 [P] Write `.github/workflows/release.yml` packing and publishing every NuGet
       package on a version tag.
-- [ ] T078 Write `README.md` (repository root) with Portuguese and English sections,
+- [x] T078 Write `README.md` (repository root) with Portuguese and English sections,
       including the copyable `RacaCor` example producing the row `RacaCor | Branca | B |
       1 | Branca` — Constitution Principle IX and `quickstart.md` Scenario A.
 - [ ] T079 Audit every public type/member introduced in T012–T070 for XML documentation
