@@ -51,8 +51,9 @@ Represents one member of a marked enum.
 
 **Validation rules**:
 - `Code` unique within the owning `EnumDictionaryModel.Members` (DD0002).
-- `Code.Length <= MaxCodeLength` (DD0003, configurable, see Clarifications in `spec.md`
-  for the still-open default value).
+- `Code.Length <= MaxCodeLength` (DD0003, configurable via
+  `DataDictionaryDefaultsAttribute.MaxCodeLength`, default `64` — see the `2026-09-10`
+  entry in `spec.md`'s `## Clarifications`).
 - `NumericValue` uniqueness across members of the same enum is **not** required; a
   collision is allowed but triggers DD0006 (Warning) because it signals a numeric alias.
 
