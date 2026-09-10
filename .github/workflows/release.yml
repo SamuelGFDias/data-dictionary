@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  pack-and-publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore DataDictionary.sln
+
+      - name: Build
+        run: dotnet build DataDictionary.sln --no-restore -c Release -p:Version=${{ steps.version.outputs.VERSION }}
+
+      - name: Test — Core
+        run: dotnet test tests/DataDictionary.Core.Tests/DataDictionary.Core.Tests.csproj --no-build -c Release
+
+      - name: Test — Generator
+        run: dotnet test tests/DataDictionary.Generator.Tests/DataDictionary.Generator.Tests.csproj --no-build -c Release
+
+      - name: Test — EntityFrameworkCore
+        run: dotnet test tests/DataDictionary.EntityFrameworkCore.Tests/DataDictionary.EntityFrameworkCore.Tests.csproj --no-build -c Release
+
+      - name: Pack
+        run: |
+          dotnet pack src/DataDictionary.Abstractions/DataDictionary.Abstractions.csproj -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./artifacts --no-build
+          dotnet pack src/DataDictionary.Generator/DataDictionary.Generator.csproj -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./artifacts --no-build
+          dotnet pack src/DataDictionary.Core/DataDictionary.Core.csproj -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./artifacts --no-build
+          dotnet pack src/DataDictionary.EntityFrameworkCore/DataDictionary.EntityFrameworkCore.csproj -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./artifacts --no-build
+
+      - name: NuGet login (OIDC)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to NuGet
+        run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
