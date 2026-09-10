@@ -413,26 +413,26 @@ confirm no key-conflict failure and exactly one writer.
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T066 [P] [US5] Add an EF Core integration test (SQL Server and PostgreSQL) for
+- [x] T066 [P] [US5] Add an EF Core integration test (SQL Server and PostgreSQL) for
       `quickstart.md` Scenario F — two instances starting simultaneously in `Sync` mode,
       exactly one writes, neither fails on a key conflict — in
       `tests/DataDictionary.EntityFrameworkCore.Tests/ConcurrentBootTests.cs`.
-- [ ] T067 [P] [US5] Add an EF Core integration test asserting an instance that fails to
+- [x] T067 [P] [US5] Add an EF Core integration test asserting an instance that fails to
       acquire the lock falls back to `ValidateOnly` behavior (no write, no startup
       failure caused solely by the lock) in
       `tests/DataDictionary.EntityFrameworkCore.Tests/LockFallbackTests.cs`.
 
 ### Implementation for User Story 5
 
-- [ ] T068 [US5] Implement `IDataDictionaryStore.AcquireLockAsync` for SQL Server using
+- [x] T068 [US5] Implement `IDataDictionaryStore.AcquireLockAsync` for SQL Server using
       `sp_getapplock` in
       `src/DataDictionary.EntityFrameworkCore/SqlServer/SqlServerDictionaryLock.cs`, per
       `research.md` §6. (depends on T044)
-- [ ] T069 [P] [US5] Implement `IDataDictionaryStore.AcquireLockAsync` for PostgreSQL
+- [x] T069 [P] [US5] Implement `IDataDictionaryStore.AcquireLockAsync` for PostgreSQL
       using `pg_advisory_lock` (session-scoped, released on session end) in
       `src/DataDictionary.EntityFrameworkCore/PostgreSql/PostgreSqlDictionaryLock.cs`,
       per `research.md` §6. (depends on T044)
-- [ ] T070 [US5] Wire the startup synchronization orchestrator to call
+- [x] T070 [US5] Wire the startup synchronization orchestrator to call
       `AcquireLockAsync` before any write in `Sync`/`SyncAndValidate` modes, falling back
       to `ValidateOnly` behavior when the lock is not obtained (FR-024), in
       `src/DataDictionary.Core/Sync/DataDictionarySynchronizer.cs`. (depends on T056,
