@@ -32,9 +32,27 @@ internal static class GeneratorTestHelper
     /// source file and every reported diagnostic — deterministic and suitable for a
     /// Verify snapshot.
     /// </summary>
-    internal static string Run(string source, params string[] additionalSources)
+    internal static string Run(string source, params string[] additionalSources) =>
+        Run(DocumentationMode.Parse, source, additionalSources);
+
+    /// <summary>
+    /// As <see cref="Run(string, string[])"/>, but parsing the fixture sources under an
+    /// explicit <paramref name="documentationMode"/>.
+    /// </summary>
+    /// <remarks>
+    /// The mode is not a detail tests may ignore: the C# command-line compiler passes
+    /// <see cref="DocumentationMode.None"/> for every project that does not set
+    /// <c>&lt;GenerateDocumentationFile&gt;true&lt;/GenerateDocumentationFile&gt;</c>,
+    /// so <see cref="DocumentationMode.None"/> — not the
+    /// <see cref="DocumentationMode.Parse"/> default used elsewhere here — is what most
+    /// real consumer builds actually hand the generator.
+    /// </remarks>
+    internal static string Run(
+        DocumentationMode documentationMode,
+        string source,
+        params string[] additionalSources)
     {
-        var parseOptions = new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.Parse);
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Latest, documentationMode);
 
         var syntaxTrees = new[] { source }
             .Concat(additionalSources)
