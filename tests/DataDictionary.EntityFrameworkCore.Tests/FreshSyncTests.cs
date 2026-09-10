@@ -1,5 +1,6 @@
 using DataDictionary.Abstractions.Persistence;
 using DataDictionary.Abstractions.Sync;
+using DataDictionary.Core;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.MsSql;
 using Testcontainers.PostgreSql;
@@ -55,7 +56,7 @@ public sealed class FreshSyncTests
 
     private static async Task RunScenarioAAsync(DbContext context)
     {
-        var store = new EfDataDictionaryStore(context);
+        var store = new EfDataDictionaryStore(context, new DataDictionaryOptions(Manifests: []));
 
         // Empty database: GetCurrentAsync must report nothing for this enum yet.
         var beforeState = await store.GetCurrentAsync(EnumKey, CancellationToken.None);
