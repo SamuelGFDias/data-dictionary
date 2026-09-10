@@ -20,6 +20,8 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageType>DevelopmentDependency</PackageType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Roslyn incremental source generator for DataDictionary — reads marked enums and emits, at compile time, the manifest, EF Core mapping, and enum-to-code value converters.</Description>
+    <PackageTags>datadictionary;source-generator;roslyn;analyzer</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

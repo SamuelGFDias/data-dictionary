@@ -5,6 +5,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>14.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>Samuel Dias</Authors>
+    <Company>Samuel Dias</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/SamuelGFDias/data-dictionary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SamuelGFDias/data-dictionary</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Copyright>Copyright (c) 2026 Samuel Dias</Copyright>
   </PropertyGroup>
 
 </Project>

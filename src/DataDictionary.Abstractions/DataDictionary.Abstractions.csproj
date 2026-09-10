@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Public attributes, interfaces, and compile-time manifest types for DataDictionary — the contracts a consuming enum and persistence provider implement against.</Description>
+    <PackageTags>datadictionary;enum;data-dictionary</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
