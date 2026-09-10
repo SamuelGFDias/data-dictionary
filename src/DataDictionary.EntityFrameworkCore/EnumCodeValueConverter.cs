@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq.Expressions;
 using DataDictionary.Abstractions.Manifest;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -27,7 +28,7 @@ public sealed class EnumCodeValueConverter<TEnum> : ValueConverter<TEnum, string
     public EnumCodeValueConverter(IReadOnlyDictionary<TEnum, string> codeByValue)
         : base(
             value => ToCode(value, codeByValue),
-            code => FromCode(code, codeByValue))
+            BuildFromCode(codeByValue))
     {
     }
 
@@ -44,14 +45,36 @@ public sealed class EnumCodeValueConverter<TEnum> : ValueConverter<TEnum, string
         return code;
     }
 
-    private static TEnum FromCode(string code, IReadOnlyDictionary<TEnum, string> codeByValue)
+    /// <summary>
+    /// Builds the code-to-value lookup once, at converter construction time (which itself
+    /// happens once per marked enum, during <c>OnModelCreating</c>/model building — not per
+    /// request), and returns an expression closed over it for the <see cref="ValueConverter{TModel,TProvider}"/>
+    /// base constructor (which requires an <see cref="Expression{TDelegate}"/>, not a plain
+    /// delegate, so it can compile and cache the conversion). This converter runs on every
+    /// EF Core read/write touching a marked-enum property — the project's one genuinely
+    /// hot-path per business request (Constitution Principle IV's reflection-avoidance
+    /// concern applies here to raw algorithmic cost instead: without this inversion,
+    /// <c>FromCode</c> would linearly scan <paramref name="codeByValue"/> on every call).
+    /// <see cref="StringComparer.Ordinal"/> preserves the original comparer-less
+    /// <c>string</c> equality (<c>==</c>) used by the previous linear scan.
+    /// </summary>
+    private static Expression<Func<string, TEnum>> BuildFromCode(IReadOnlyDictionary<TEnum, string> codeByValue)
     {
+        var valueByCode = new Dictionary<string, TEnum>(codeByValue.Count, StringComparer.Ordinal);
+
         foreach (var pair in codeByValue)
         {
-            if (pair.Value == code)
-            {
-                return pair.Key;
-            }
+            valueByCode[pair.Value] = pair.Key;
+        }
+
+        return code => Lookup(code, valueByCode);
+    }
+
+    private static TEnum Lookup(string code, Dictionary<string, TEnum> valueByCode)
+    {
+        if (valueByCode.TryGetValue(code, out var value))
+        {
+            return value;
         }
 
         throw new InvalidOperationException(
