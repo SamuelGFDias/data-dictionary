@@ -6,7 +6,7 @@ namespace DataDictionary.Generator.Diagnostics;
 /// DD0003 (Error) — a resolved <c>code</c> exceeds the configured maximum length.
 /// Defaults to <see cref="GeneratorConstants.DefaultMaxCodeLength"/> (64), overridable
 /// per assembly via
-/// <see cref="DataDictionary.Abstractions.DataDictionaryDefaultsAttribute.MaxCodeLength"/>
+/// <c>DataDictionary.Abstractions.DataDictionaryDefaultsAttribute.MaxCodeLength</c>
 /// — the override applies to every member in the compilation, explicit mode and
 /// convention mode alike, since it is an assembly-level setting rather than a
 /// convention-only one. See <c>contracts/diagnostics-contract.md</c> (FR-027) and the

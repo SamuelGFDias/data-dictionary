@@ -3,9 +3,9 @@ namespace DataDictionary.Abstractions;
 /// <summary>
 /// Identifies where a <see cref="Manifest.DictionaryMemberModel.Code"/> value was
 /// resolved from. Used both as the value of
-/// <see cref="Attributes.DataDictionaryDefaultsAttribute.CodeSource"/> (the
+/// <see cref="DataDictionaryDefaultsAttribute.CodeSource"/> (the
 /// assembly-level convention to apply when no explicit
-/// <see cref="Attributes.DictionaryValueAttribute"/> is present) and as
+/// <see cref="DictionaryValueAttribute"/> is present) and as
 /// <see cref="Manifest.DictionaryMemberModel.CodeSource"/> (the diagnostic record of
 /// which source actually won for a given member), per the precedence order in
 /// <c>spec.md</c> FR-005.
@@ -13,7 +13,7 @@ namespace DataDictionary.Abstractions;
 public enum CodeSource
 {
     /// <summary>
-    /// Set explicitly via <see cref="Attributes.DictionaryValueAttribute"/>. Always
+    /// Set explicitly via <see cref="DictionaryValueAttribute"/>. Always
     /// takes precedence over every convention-derived source.
     /// </summary>
     Explicit = 0,

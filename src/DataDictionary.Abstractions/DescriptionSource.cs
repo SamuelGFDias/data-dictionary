@@ -4,7 +4,7 @@ namespace DataDictionary.Abstractions;
 /// Identifies where a <see cref="Manifest.DictionaryMemberModel.Description"/> (or
 /// enum-level description) is resolved from, in the precedence order defined by
 /// <c>spec.md</c> FR-005. Used as the value of
-/// <see cref="Attributes.DataDictionaryDefaultsAttribute.DescriptionFrom"/>.
+/// <see cref="DataDictionaryDefaultsAttribute.DescriptionFrom"/>.
 /// </summary>
 public enum DescriptionSource
 {

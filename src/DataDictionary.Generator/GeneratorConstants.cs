@@ -14,7 +14,7 @@ internal static class GeneratorConstants
     /// The default maximum length a resolved <c>code</c> may have before DD0003 fires
     /// (<c>contracts/diagnostics-contract.md</c>, FR-027) — the single source of truth
     /// for the value <c>64</c>, referenced by both
-    /// <see cref="DataDictionary.Abstractions.DataDictionaryDefaultsAttribute.MaxCodeLength"/>'s
+    /// <c>DataDictionary.Abstractions.DataDictionaryDefaultsAttribute.MaxCodeLength</c>'s
     /// own default and <see cref="Model.ConventionDefaults.Default"/>.
     /// </summary>
     /// <remarks>

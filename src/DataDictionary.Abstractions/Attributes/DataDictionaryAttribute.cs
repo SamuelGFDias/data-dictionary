@@ -3,7 +3,7 @@ namespace DataDictionary.Abstractions;
 /// <summary>
 /// Marks an <see langword="enum"/> declaration as a data dictionary source: its
 /// members are synchronized into the persisted dictionary table
-/// (<c>tb_dicionario_dados</c>) whenever the configured <see cref="SyncMode"/> is
+/// (<c>tb_dicionario_dados</c>) whenever the configured <see cref="Configuration.SyncMode"/> is
 /// active. See <c>contracts/attributes-contract.md</c> for the full explicit-mode
 /// example.
 /// </summary>

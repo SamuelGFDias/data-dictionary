@@ -73,8 +73,8 @@ public interface IDataDictionaryBuilder
     IDataDictionaryBuilder AddManifest(DataDictionaryManifest manifest);
 
     /// <summary>
-    /// Configures the <see cref="Configuration.SyncMode"/> the startup synchronizer runs
-    /// under. Defaults to <see cref="Configuration.SyncMode.Off"/> when never called, so
+    /// Configures the <see cref="SyncMode"/> the startup synchronizer runs
+    /// under. Defaults to <see cref="SyncMode.Off"/> when never called, so
     /// adopting the library stays inert until an environment explicitly opts in.
     /// </summary>
     /// <param name="mode">The synchronization mode to configure.</param>
