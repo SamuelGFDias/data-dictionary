@@ -5,6 +5,8 @@ using DataDictionary.Abstractions.Manifest;
 using DataDictionary.Abstractions.Persistence;
 using DataDictionary.Abstractions.Sync;
 using DataDictionary.Core;
+using DataDictionary.EntityFrameworkCore.PostgreSql;
+using DataDictionary.EntityFrameworkCore.SqlServer;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataDictionary.EntityFrameworkCore;
@@ -21,9 +23,10 @@ namespace DataDictionary.EntityFrameworkCore;
 /// deactivate (User Story 1, T044/T045; User Story 3, T061; User Story 4, T065). User
 /// Story 2 (T052) adds <see cref="IsCodeInUseAsync"/>, which walks the consumer's own
 /// <see cref="DbContext.Model"/> per <c>research.md</c> §7.
-/// <see cref="AcquireLockAsync"/> remains out of scope for this phase (later user
-/// story — concurrent-replica-boot locking) and throws
-/// <see cref="NotImplementedException"/> until then.
+/// <see cref="AcquireLockAsync"/> (User Story 5, T068/T069) delegates to the
+/// provider-specific advisory-lock implementation — <c>SqlServerDictionaryLock</c> or
+/// <c>PostgreSqlDictionaryLock</c> — selected from <c>DbContext.Database.ProviderName</c>,
+/// per <c>research.md</c> §6.
 /// </remarks>
 /// <param name="dbContext">
 /// The consumer's own <see cref="DbContext"/> — the same instance whose
@@ -309,14 +312,36 @@ public sealed class EfDataDictionaryStore(DbContext dbContext, DataDictionaryOpt
     }
 
     /// <inheritdoc/>
-    /// <exception cref="NotImplementedException">
-    /// Always — the distributed advisory lock used for concurrent-replica boot is
-    /// implemented in a later user story.
+    /// <remarks>
+    /// Dispatches on <c>_dbContext.Database.ProviderName</c> to the matching
+    /// advisory-lock implementation — <c>sp_getapplock</c> on SQL Server,
+    /// <c>pg_advisory_lock</c> on PostgreSQL (research.md §6) — since each database's
+    /// lock primitive is a different set of statements run over the same connection.
+    /// </remarks>
+    /// <exception cref="NotSupportedException">
+    /// <c>_dbContext.Database.ProviderName</c> is neither the SQL Server nor the
+    /// PostgreSQL EF Core provider — the distributed lock has no implementation for any
+    /// other database.
     /// </exception>
     public Task<LockAcquisitionResult> AcquireLockAsync(
         TimeSpan timeout,
-        CancellationToken cancellationToken) =>
-        throw new NotImplementedException(
-            "AcquireLockAsync is out of scope for User Story 1 (T044/T045) and is " +
-            "implemented in the user story covering concurrent replica boot.");
+        CancellationToken cancellationToken)
+    {
+        var providerName = _dbContext.Database.ProviderName;
+
+        if (providerName is not null && providerName.Contains("SqlServer", StringComparison.Ordinal))
+        {
+            return SqlServerDictionaryLock.AcquireAsync(_dbContext, timeout, cancellationToken);
+        }
+
+        if (providerName is not null && providerName.Contains("Npgsql", StringComparison.Ordinal))
+        {
+            return PostgreSqlDictionaryLock.AcquireAsync(_dbContext, timeout, cancellationToken);
+        }
+
+        throw new NotSupportedException(
+            $"AcquireLockAsync has no distributed-lock implementation for database " +
+            $"provider '{providerName}'. Only SQL Server (Microsoft.EntityFrameworkCore.SqlServer) " +
+            "and PostgreSQL (Npgsql.EntityFrameworkCore.PostgreSQL) are supported.");
+    }
 }
