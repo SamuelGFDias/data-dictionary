@@ -1,5 +1,6 @@
 using DataDictionary.Abstractions.Configuration;
 using DataDictionary.Abstractions.Manifest;
+using DataDictionary.Core.Sync;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DataDictionary.Core.DependencyInjection;
@@ -15,6 +16,14 @@ public static class DataDictionaryServiceCollectionExtensions
     /// and the diff engine, allowing one or more compiled manifests to be registered
     /// via the builder callback.
     /// </summary>
+    /// <remarks>
+    /// This registers <see cref="DictionaryDiffEngine"/> and
+    /// <see cref="DataDictionarySynchronizer"/> only. It does <em>not</em> register
+    /// <c>IDataDictionaryStore</c> — <c>Core</c> never references an ORM (Constitution
+    /// Principle III), so the consumer (or a provider package such as
+    /// <c>DataDictionary.EntityFrameworkCore</c>) is responsible for registering its own
+    /// <c>IDataDictionaryStore</c> implementation.
+    /// </remarks>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">A callback to configure the data dictionary builder,
     /// normally used to register one or more manifests via <see cref="IDataDictionaryBuilder.AddManifest"/>.</param>
@@ -31,6 +40,13 @@ public static class DataDictionaryServiceCollectionExtensions
 
         // Register the options type so it can be resolved at runtime
         services.AddSingleton(builder.BuildOptions());
+
+        // The diff engine is stateless and pure; a single shared instance is fine.
+        services.AddSingleton<DictionaryDiffEngine>();
+
+        // Scoped to match the typical lifetime of the consumer-registered
+        // IDataDictionaryStore (e.g. one backed by a scoped DbContext).
+        services.AddScoped<DataDictionarySynchronizer>();
 
         return services;
     }
@@ -51,6 +67,15 @@ public interface IDataDictionaryBuilder
     /// <param name="manifest">The manifest to register.</param>
     /// <returns>This builder for chaining.</returns>
     IDataDictionaryBuilder AddManifest(DataDictionaryManifest manifest);
+
+    /// <summary>
+    /// Configures the <see cref="Configuration.SyncMode"/> the startup synchronizer runs
+    /// under. Defaults to <see cref="Configuration.SyncMode.Off"/> when never called, so
+    /// adopting the library stays inert until an environment explicitly opts in.
+    /// </summary>
+    /// <param name="mode">The synchronization mode to configure.</param>
+    /// <returns>This builder for chaining.</returns>
+    IDataDictionaryBuilder WithSyncMode(SyncMode mode);
 }
 
 /// <summary>
@@ -76,6 +101,13 @@ internal sealed class DataDictionaryBuilder : IDataDictionaryBuilder
     public IDataDictionaryBuilder AddManifest(DataDictionaryManifest manifest)
     {
         _manifests.Add(manifest);
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IDataDictionaryBuilder WithSyncMode(SyncMode mode)
+    {
+        _syncMode = mode;
         return this;
     }
 
