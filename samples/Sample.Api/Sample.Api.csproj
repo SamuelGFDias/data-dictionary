@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\DataDictionary.EntityFrameworkCore\DataDictionary.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\DataDictionary.Generator\DataDictionary.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>

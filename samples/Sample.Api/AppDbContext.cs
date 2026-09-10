@@ -1,4 +1,5 @@
 using DataDictionary.EntityFrameworkCore;
+using DataDictionary.EntityFrameworkCore.Seeding;
 using Microsoft.EntityFrameworkCore;
 
 namespace Sample.Api;
@@ -7,7 +8,9 @@ namespace Sample.Api;
 /// Minimal sample <see cref="DbContext"/> demonstrating the wiring required by
 /// <c>quickstart.md</c> Scenario A: <see cref="ModelBuilderExtensions.ApplyDataDictionary"/>
 /// maps the dictionary's own tables (<c>tb_dicionario_dados</c> and, optionally,
-/// <c>tb_dicionario_enum</c>) into this context's model.
+/// <c>tb_dicionario_enum</c>) into this context's model. <see cref="MigrationSeedStrategy.SeedDataDictionary"/>
+/// then exercises the opt-in <c>SeedStrategy.Migration</c> path, baking the manifest's rows into
+/// the generated migration via <c>HasData</c>.
 /// </summary>
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
@@ -17,5 +20,6 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyDataDictionary();
+        modelBuilder.SeedDataDictionary(Sample.Api.Generated.DataDictionaryManifest.Default);
     }
 }

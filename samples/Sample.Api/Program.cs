@@ -25,6 +25,19 @@ builder.Services.AddScoped<IDataDictionaryStore>(sp =>
 
 var app = builder.Build();
 
+// The sample does not provision its own schema any other way (no EnsureCreated,
+// no external migration step) — a genuinely empty database would make
+// SynchronizeAsync below fail with "Invalid object name 'tb_dicionario_dados'"
+// instead of exercising the sync. Applying the real EF Core migration here,
+// before the synchronizer runs, is what makes Scenario A work against an empty
+// database; it also seeds the initial rows via MigrationSeedStrategy's HasData
+// (T071-T072), so the synchronizer's very first run sees an Unchanged dictionary.
+using (var migrationScope = app.Services.CreateScope())
+{
+    var dbContext = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 // Registering via AddDataDictionary/WithSyncMode above only configures the
 // synchronizer — it does not run it. DataDictionarySynchronizer is Scoped, so it
 // must be resolved from a DI scope; this is what actually triggers the boot-time
