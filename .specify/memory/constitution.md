@@ -1,50 +1,122 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# DataDictionary Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Open Source, Strict SemVer
+DataDictionary is developed in the open and published on NuGet. Every published package
+version MUST follow Semantic Versioning (MAJOR.MINOR.PATCH) strictly. A breaking change
+to any public contract (public API surface, generated code shape, persisted schema
+contract, or configuration option) MUST be released as a MAJOR version bump only. No
+breaking change may ship in a MINOR or PATCH release, regardless of urgency.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Rigid Target-Framework Separation
+`DataDictionary.Abstractions` and `DataDictionary.Generator` MUST target `netstandard2.0`
+only. `DataDictionary.Core` and every provider package (e.g. EntityFrameworkCore) MUST
+target `net10.0` only. This split is non-negotiable: it is what allows the generator to
+run inside any Roslyn host (including older SDKs and IDEs) while the runtime libraries
+use modern .NET features. A change to a project's target framework(s) is itself a
+governance-level decision and MUST be reflected here before it is made.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Core Has Zero ORM Dependencies
+`DataDictionary.Core` MUST NEVER reference Entity Framework Core, Dapper, or any other
+ORM or database-access library, directly or transitively. All persistence and querying
+behavior is expressed exclusively through interfaces owned by `Core`. Providers (e.g.
+`DataDictionary.EntityFrameworkCore`) implement those interfaces and own the ORM
+dependency. This keeps `Core` reusable across any data-access technology and keeps
+provider-specific concerns out of the shared engine.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Zero Hot-Path Reflection
+The runtime code path exercised by a consuming application at steady state (after
+startup synchronization) MUST NOT use reflection — no `Enum.Parse`, `Enum.GetValues`,
+`Activator.CreateInstance`, or attribute inspection at request time. Anything that can be
+resolved at compile time (enum-to-code mappings, descriptions, value converters, entity
+configuration) MUST be produced by the source generator instead. Reflection is permitted
+only in one-time startup/synchronization code paths that are not part of steady-state
+request handling, and even there it MUST be minimized.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. AOT and Trimming Compatible
+All shipped runtime assemblies (`Core` and providers) MUST be compatible with Native AOT
+publishing and trimming. This follows directly from Principle IV: a codebase with no
+hot-path reflection and compile-time-generated mappings is what makes AOT/trimming
+compatibility achievable. Any API that cannot be made trim-safe MUST be annotated with
+the appropriate trimming/AOT analyzer attributes so violations surface at the consumer's
+build time, not at their runtime.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. No Behavior Without a Test (NON-NEGOTIABLE)
+Every new behavior is born with a test; there is no follow-up ticket to "add tests
+later". Source-generator behavior MUST be covered by snapshot tests. Provider behavior
+MUST be covered by integration tests that run against a real database via Testcontainers
+— mocked or in-memory database substitutes do not satisfy this principle for provider
+code. A pull request that adds behavior without a corresponding test MUST NOT be merged.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### VII. No Silent Writes in Production
+The library MUST NEVER silently write over a destructive divergence between the enum
+source of truth and the persisted dictionary. When a destructive or ambiguous change is
+detected (e.g. a code still in use being removed, or a code collision), synchronization
+MUST abort application boot with an actionable error message rather than proceeding with
+a best-effort write. Silence in the face of destructive divergence is treated as a
+correctness bug, not a convenience.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### VIII. The Consumer Is a Client of the Analyzer
+Compile-time analyzers and the source generator MUST treat the consuming developer as a
+client whose configuration mistakes deserve a clear, build-time diagnostic. Any
+misconfiguration that can be detected statically (duplicate codes, unresolved
+descriptions, invalid attribute usage, unsupported enum shapes) MUST surface as a build
+error or warning with a stable diagnostic ID. It MUST NOT be deferred to a runtime
+exception discovered only when the consumer's application boots or executes.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### IX. Bilingual, Fully Documented Public API
+The README MUST document the library in both Portuguese and English. Every public type
+and member MUST carry XML documentation comments. Undocumented public API is treated as
+incomplete work, not as a follow-up task, because the generated diagnostics and the
+public contract are the primary interface most consumers will read.
+
+## Technology & Compatibility Constraints
+
+- Target frameworks are fixed per Principle II and MUST NOT be loosened to "multi-target
+  everything" for convenience.
+- The solution builds with C# language features appropriate to each target framework's
+  toolchain; language-version choices MUST NOT force `Core`/providers below `net10.0` or
+  `Abstractions`/`Generator` above `netstandard2.0`.
+- Generated code and public contracts MUST remain source-compatible with AOT publish and
+  trimming as shipped; a regression here is treated as a breaking change under
+  Principle I even if the public API text did not change.
+- NuGet packaging MUST distribute the generator as a development-time-only dependency
+  (analyzer asset) so it never becomes a runtime dependency of a consuming application.
+
+## Quality Gates
+
+- CI MUST run and pass: generator snapshot tests, Core unit tests, and provider
+  integration tests (Testcontainers) before a change can merge.
+- Any diagnostic ID introduced by the analyzer/generator MUST have at least one test
+  proving it fires and at least one test proving it does not fire on valid input.
+- A release MUST NOT be published from a build with failing tests, disabled test
+  projects, or suppressed warnings introduced to force a pass.
+- Documentation changes (README PT/EN, XML docs) MUST be reviewed as part of the same
+  pull request that introduces or changes the public API they describe, not deferred.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes any conflicting practice, template default, or prior
+informal convention in this repository. Every plan, specification, and task list
+produced under Spec-Driven Development for this project MUST be checked against these
+principles before implementation begins; any deviation MUST be justified explicitly in
+that artifact's own documentation (e.g. a "Complexity Tracking" or equivalent section)
+or the deviation MUST be rejected.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendment procedure: a change to this constitution is proposed as a pull request that
+modifies this file directly, states the rationale for the change, and — if the change
+affects Principles I through IX — is called out explicitly as a breaking governance
+change. Amendments take effect on merge; `LAST_AMENDED_DATE` below MUST be updated to
+the merge date.
+
+Versioning policy for this document follows semantic versioning of the constitution
+itself: MAJOR for backward-incompatible principle removal or redefinition, MINOR for a
+new principle or materially expanded guidance, PATCH for clarifications and non-semantic
+wording fixes.
+
+Compliance review: every `speckit-plan` and `speckit-tasks` artifact for this project
+MUST include or reference a constitution-compliance check. Reviewers MUST treat a
+missing or unresolved compliance check as a blocking issue, not a nit.
+
+**Version**: 1.0.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-10
