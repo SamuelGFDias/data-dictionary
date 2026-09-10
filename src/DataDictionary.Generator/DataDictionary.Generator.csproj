@@ -22,6 +22,15 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Description>Roslyn incremental source generator for DataDictionary — reads marked enums and emits, at compile time, the manifest, EF Core mapping, and enum-to-code value converters.</Description>
     <PackageTags>datadictionary;source-generator;roslyn;analyzer</PackageTags>
+    <!--
+      NU5128 fires because this is an analyzer-only package (IncludeBuildOutput=false,
+      DevelopmentDependency=true above): the generator DLL only ever ships under
+      analyzers/dotnet/cs, never under lib/ or ref/, for any TFM. NuGet's warning that
+      the netstandard2.0 dependency group has no lib/ref match is expected and
+      unavoidable for this package shape, not a sign of a real defect — the same
+      pattern Microsoft's own Roslyn analyzer templates suppress.
+    -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
