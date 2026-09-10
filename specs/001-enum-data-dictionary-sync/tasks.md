@@ -448,34 +448,34 @@ confirm no key-conflict failure and exactly one writer.
 feature is considered implementation-complete: the opt-in seed strategy, packaging,
 CI/CD, documentation, and the final constitution-compliance gate.
 
-- [ ] T071 [P] Implement `SeedStrategy.Migration` via EF Core `HasData`, relying on the
+- [x] T071 [P] Implement `SeedStrategy.Migration` via EF Core `HasData`, relying on the
       natural composite key `(enum_key, field_name)` already in place, in
       `src/DataDictionary.EntityFrameworkCore/Seeding/MigrationSeedStrategy.cs`, per
       `research.md` §8.
-- [ ] T072 [P] Add an integration test proving `HasData`-seeded rows satisfy the same
+- [x] T072 [P] Add an integration test proving `HasData`-seeded rows satisfy the same
       diff engine expectations as runtime-seeded ones, in
       `tests/DataDictionary.EntityFrameworkCore.Tests/MigrationSeedStrategyTests.cs`.
       (depends on T071)
-- [ ] T073 [P] Reserve the `DD0008` diagnostic ID as an unused constant in
+- [x] T073 [P] Reserve the `DD0008` diagnostic ID as an unused constant in
       `src/DataDictionary.Generator/Diagnostics/DiagnosticDescriptors.cs`. Per
       `contracts/diagnostics-contract.md`, this ID MUST NOT be wired to fire in this
       feature (no baseline lock file ships in this MVP).
-- [ ] T074 Configure NuGet packaging for `DataDictionary.Generator` — `analyzers/dotnet/cs`
+- [x] T074 Configure NuGet packaging for `DataDictionary.Generator` — `analyzers/dotnet/cs`
       output path, `DevelopmentDependency=true`, `PrivateAssets="all"` on every
       `Microsoft.CodeAnalysis.*` reference — in
       `src/DataDictionary.Generator/DataDictionary.Generator.csproj`, per `research.md`
       §5.
-- [ ] T075 [P] Configure `DataDictionary.Abstractions` as an ordinary (non-private)
+- [x] T075 [P] Configure `DataDictionary.Abstractions` as an ordinary (non-private)
       transitive dependency of the main consumer-facing package, per `research.md` §5.
-- [ ] T076 [P] Write `.github/workflows/ci.yml` building the full solution and running
+- [x] T076 [P] Write `.github/workflows/ci.yml` building the full solution and running
       all three test projects, including the Testcontainers-backed integration tests, on
       push/PR.
-- [ ] T077 [P] Write `.github/workflows/release.yml` packing and publishing every NuGet
+- [x] T077 [P] Write `.github/workflows/release.yml` packing and publishing every NuGet
       package on a version tag.
 - [x] T078 Write `README.md` (repository root) with Portuguese and English sections,
       including the copyable `RacaCor` example producing the row `RacaCor | Branca | B |
       1 | Branca` — Constitution Principle IX and `quickstart.md` Scenario A.
-- [ ] T079 Audit every public type/member introduced in T012–T070 for XML documentation
+- [x] T079 Audit every public type/member introduced in T012–T070 for XML documentation
       comments across `src/DataDictionary.Abstractions`, `src/DataDictionary.Generator`,
       `src/DataDictionary.Core`, and `src/DataDictionary.EntityFrameworkCore`, confirming
       the solution builds clean under `TreatWarningsAsErrors=true` (Constitution
