@@ -17,11 +17,9 @@ namespace DataDictionary.EntityFrameworkCore;
 /// <c>contracts/store-contract.md</c>.
 /// </summary>
 /// <remarks>
-/// <see cref="GetCurrentAsync"/> and <see cref="ApplyAsync"/> support insert and update
-/// (User Story 1, T044/T045; User Story 3, T061). <see cref="ApplyAsync"/> throws
-/// <see cref="NotSupportedException"/> only when handed an outcome carrying
-/// deactivations — that persistence path is implemented in User Story 4. User Story 2
-/// (T052) adds <see cref="IsCodeInUseAsync"/>, which walks the consumer's own
+/// <see cref="GetCurrentAsync"/> and <see cref="ApplyAsync"/> support insert, update and
+/// deactivate (User Story 1, T044/T045; User Story 3, T061; User Story 4, T065). User
+/// Story 2 (T052) adds <see cref="IsCodeInUseAsync"/>, which walks the consumer's own
 /// <see cref="DbContext.Model"/> per <c>research.md</c> §7.
 /// <see cref="AcquireLockAsync"/> remains out of scope for this phase (later user
 /// story — concurrent-replica-boot locking) and throws
@@ -71,25 +69,13 @@ public sealed class EfDataDictionaryStore(DbContext dbContext, DataDictionaryOpt
     }
 
     /// <inheritdoc/>
-    /// <exception cref="NotSupportedException">
-    /// <paramref name="outcome"/> carries any <see cref="SynchronizationOutcome.ToDeactivate"/>
-    /// entries — not supported until a later user story (User Story 4) implements that
-    /// persistence path.
-    /// </exception>
     public async Task ApplyAsync(
         SynchronizationOutcome outcome,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(outcome);
 
-        if (outcome.ToDeactivate.Count > 0)
-        {
-            throw new NotSupportedException(
-                "EfDataDictionaryStore.ApplyAsync does not yet support deactivate " +
-                "outcomes. Deactivate support lands in a later user story (User Story 4).");
-        }
-
-        if (outcome.ToInsert.Count == 0 && outcome.ToUpdate.Count == 0)
+        if (outcome.ToInsert.Count == 0 && outcome.ToUpdate.Count == 0 && outcome.ToDeactivate.Count == 0)
         {
             return;
         }
@@ -137,9 +123,40 @@ public sealed class EfDataDictionaryStore(DbContext dbContext, DataDictionaryOpt
             }
         }
 
-        // A single SaveChangesAsync call commits every ToInsert and ToUpdate row for
-        // this enum in one database transaction, satisfying the "apply the whole
-        // outcome atomically per enum" contract.
+        if (outcome.ToDeactivate.Count > 0)
+        {
+            foreach (var entry in outcome.ToDeactivate)
+            {
+                // Unlike ToUpdate, deactivation does not stamp UpdatedAt — retiring a
+                // removed-and-unused member is not a change to a compared descriptive
+                // field under FR-016, so UpdatedAt stays exactly as the diff engine set
+                // it (preserved from the original row).
+
+                // Same tracked-instance reuse as ToUpdate above: the diff engine always
+                // builds a brand-new DictionaryEntry sharing its composite key with
+                // whatever GetCurrentAsync read (or an earlier ApplyAsync call on this
+                // same DbContext left tracked), so reuse that tracked instance instead
+                // of attaching a second one with the same key.
+                var tracked = _dbContext.ChangeTracker.Entries<DictionaryEntry>()
+                    .FirstOrDefault(e =>
+                        string.Equals(e.Entity.EnumKey, entry.EnumKey, StringComparison.Ordinal) &&
+                        string.Equals(e.Entity.FieldName, entry.FieldName, StringComparison.Ordinal));
+
+                if (tracked is not null)
+                {
+                    tracked.CurrentValues.SetValues(entry);
+                    tracked.State = EntityState.Modified;
+                }
+                else
+                {
+                    _dbContext.Set<DictionaryEntry>().Update(entry);
+                }
+            }
+        }
+
+        // A single SaveChangesAsync call commits every ToInsert, ToUpdate and
+        // ToDeactivate row for this enum in one database transaction, satisfying the
+        // "apply the whole outcome atomically per enum" contract.
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
