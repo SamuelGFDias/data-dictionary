@@ -2,8 +2,10 @@ using DataDictionary.Abstractions;
 using DataDictionary.Abstractions.Configuration;
 using DataDictionary.Core;
 using DataDictionary.Core.DependencyInjection;
+using DataDictionary.Core.Sync;
 using DataDictionary.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Sample.Api;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,5 +24,19 @@ builder.Services.AddScoped<IDataDictionaryStore>(sp =>
     new EfDataDictionaryStore(sp.GetRequiredService<AppDbContext>(), sp.GetRequiredService<DataDictionaryOptions>()));
 
 var app = builder.Build();
+
+// Registering via AddDataDictionary/WithSyncMode above only configures the
+// synchronizer — it does not run it. DataDictionarySynchronizer is Scoped, so it
+// must be resolved from a DI scope; this is what actually triggers the boot-time
+// synchronization documented as the library's central value. A destructive
+// divergence under the default OnBreakingChange.Fail policy makes
+// SynchronizeAsync throw DataDictionarySyncException — left uncaught here on
+// purpose, so the process fails fast at boot instead of silently starting up
+// with a stale dictionary.
+using (var scope = app.Services.CreateScope())
+{
+    var synchronizer = scope.ServiceProvider.GetRequiredService<DataDictionarySynchronizer>();
+    await synchronizer.SynchronizeAsync(CancellationToken.None);
+}
 
 app.Run();
