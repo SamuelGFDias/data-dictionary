@@ -382,18 +382,18 @@ boot succeeds.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T062 [P] [US4] Add a Core unit test classifying a removed-and-unused member into
+- [x] T062 [P] [US4] Add a Core unit test classifying a removed-and-unused member into
       `ToDeactivate` in `tests/DataDictionary.Core.Tests/DiffEngineDeactivateTests.cs`.
-- [ ] T063 [P] [US4] Add an EF Core integration test for `quickstart.md` Scenario D
+- [x] T063 [P] [US4] Add an EF Core integration test for `quickstart.md` Scenario D
       (removed unused code → `is_active` becomes `false`, boot succeeds) in
       `tests/DataDictionary.EntityFrameworkCore.Tests/RetirementTests.cs`.
 
 ### Implementation for User Story 4
 
-- [ ] T064 [US4] Extend the diff engine's classification to route removed-and-not-in-use
+- [x] T064 [US4] Extend the diff engine's classification to route removed-and-not-in-use
       members into `ToDeactivate` (using T052's `IsCodeInUseAsync` result) in
       `src/DataDictionary.Core/Sync/DictionaryDiffEngine.cs`. (depends on T053)
-- [ ] T065 [US4] Implement `IDataDictionaryStore.ApplyAsync` (EF Core) deactivation path
+- [x] T065 [US4] Implement `IDataDictionaryStore.ApplyAsync` (EF Core) deactivation path
       — `is_active = false`, row never deleted — in
       `src/DataDictionary.EntityFrameworkCore/EfDataDictionaryStore.cs`. (depends on
       T061, T064)
