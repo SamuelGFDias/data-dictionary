@@ -4,4 +4,18 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!--
+      netstandard2.0's reference assemblies do not include ImmutableArray<T> or
+      IAsyncDisposable; both are required by the public contract (data-model.md
+      "Compile-time models" and the store-contract.md lock-handle shape). Central
+      package management pins these repo-wide in Directory.Packages.props for every
+      other project, but Abstractions must stay netstandard2.0-only per Constitution
+      Principle II, so its own version is pinned here via VersionOverride rather than
+      widening the central manifest for a version only this project needs.
+    -->
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="10.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="10.0.0" />
+  </ItemGroup>
+
 </Project>

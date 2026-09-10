@@ -86,32 +86,32 @@ sync behavior exists.
 
 ### Abstractions (public contract types)
 
-- [ ] T012 [P] Define `DataDictionaryAttribute` (constructor `(string enumKey)`, `Group`
+- [X] T012 [P] Define `DataDictionaryAttribute` (constructor `(string enumKey)`, `Group`
       named property) and `DictionaryValueAttribute` (constructor `(string code)`,
       `Deprecated` named property, default `false`) in
       `src/DataDictionary.Abstractions/Attributes/DataDictionaryAttribute.cs` and
       `DictionaryValueAttribute.cs`, exactly per
       `specs/001-enum-data-dictionary-sync/contracts/attributes-contract.md`.
-- [ ] T013 [P] Define assembly-level `DataDictionaryDefaultsAttribute` (`CodeSource`,
+- [X] T013 [P] Define assembly-level `DataDictionaryDefaultsAttribute` (`CodeSource`,
       `DescriptionFrom`, `RequireDescription` named properties) and repeatable
       `DataDictionaryScanAttribute(string namespacePrefix)` in
       `src/DataDictionary.Abstractions/Attributes/DataDictionaryDefaultsAttribute.cs` and
       `DataDictionaryScanAttribute.cs`, per `contracts/attributes-contract.md`.
-- [ ] T014 [P] Define `CodeSource` and `DescriptionSource` enums in
+- [X] T014 [P] Define `CodeSource` and `DescriptionSource` enums in
       `src/DataDictionary.Abstractions/CodeSource.cs` and `DescriptionSource.cs`, with
       `DescriptionSource` ordered `XmlDoc, DescriptionAttribute, DisplayAttribute,
       MemberName` matching the precedence in `spec.md` FR-005.
-- [ ] T015 [P] Define the compile-time model types `EnumDictionaryModel` and
+- [X] T015 [P] Define the compile-time model types `EnumDictionaryModel` and
       `DictionaryMemberModel` as immutable, structurally-equatable records — every
       collection field is `ImmutableArray<T>` paired with an explicit equality comparer,
       never default reference equality — in
       `src/DataDictionary.Abstractions/Manifest/EnumDictionaryModel.cs` and
       `DictionaryMemberModel.cs`, per `data-model.md` "Compile-time models" and
       `research.md` §3 (this is required to keep the Roslyn incremental cache warm).
-- [ ] T016 [P] Define `DataDictionaryManifest` and `ManifestEnumEntry` in
+- [X] T016 [P] Define `DataDictionaryManifest` and `ManifestEnumEntry` in
       `src/DataDictionary.Abstractions/Manifest/DataDictionaryManifest.cs`, per
       `data-model.md`'s `DataDictionaryManifest` section.
-- [ ] T017 [P] Define `DictionaryEntry` with exactly the columns `enum_key, field_name,
+- [X] T017 [P] Define `DictionaryEntry` with exactly the columns `enum_key, field_name,
       code, numeric_value, description, group_name, is_active, is_deprecated,
       sort_order, content_hash, created_at, updated_at` (data-model.md `DictionaryEntry`
       table) and `DictionaryEnumCatalogEntry` with exactly `enum_key, clr_full_name,
@@ -119,22 +119,22 @@ sync behavior exists.
       (data-model.md `DictionaryEnumCatalogEntry` table) in
       `src/DataDictionary.Abstractions/Persistence/DictionaryEntry.cs` and
       `DictionaryEnumCatalogEntry.cs`.
-- [ ] T018 [P] Define `SynchronizationOutcome` (fields `ToInsert, ToUpdate,
+- [X] T018 [P] Define `SynchronizationOutcome` (fields `ToInsert, ToUpdate,
       ToDeactivate, BreakingChanges, Unchanged` per `data-model.md`
       `SynchronizationOutcome` table), `BreakingChange`, `CurrentDictionaryState`,
       `CodeUsageResult` (`bool InUse` + `IReadOnlyList<string> ReferencingTables`), and
       `LockAcquisitionResult` in `src/DataDictionary.Abstractions/Sync/` (one file per
       type), per `data-model.md` and `contracts/store-contract.md`'s "Supporting types".
-- [ ] T019 Define `IDataDictionaryStore` with `GetCurrentAsync`, `ApplyAsync`,
+- [X] T019 Define `IDataDictionaryStore` with `GetCurrentAsync`, `ApplyAsync`,
       `IsCodeInUseAsync`, `AcquireLockAsync` — exact signatures per
       `contracts/store-contract.md` — in
       `src/DataDictionary.Abstractions/IDataDictionaryStore.cs`. (depends on T017, T018)
-- [ ] T020 [P] Define `SyncMode` (`Off, ValidateOnly, Sync, SyncAndValidate`; default
+- [X] T020 [P] Define `SyncMode` (`Off, ValidateOnly, Sync, SyncAndValidate`; default
       `Off` per `spec.md` `## Clarifications`) and `OnBreakingChange` (`Fail, Warn,
       Ignore`; default `Fail` per `spec.md` `## Clarifications`) enums in
       `src/DataDictionary.Abstractions/Configuration/SyncMode.cs` and
       `OnBreakingChange.cs`.
-- [ ] T021 [P] Define naming-convention configuration
+- [X] T021 [P] Define naming-convention configuration
       (`DataDictionaryNamingOptions`: table names defaulting to `tb_dicionario_dados` /
       `tb_dicionario_enum`, schema, column-naming convention defaulting to snake_case —
       all per `spec.md` `## Clarifications` and FR-011) in
