@@ -12,10 +12,36 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
+    <!--
+      Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing 1.1.4 depends on
+      Microsoft.CodeAnalysis.CSharp.Workspaces >= 3.8.0, which does not support
+      IIncrementalGenerator (introduced in Roslyn 4.x). DataDictionary.Generator.csproj
+      marks its own Microsoft.CodeAnalysis.CSharp reference PrivateAssets="all" (so it
+      never leaks into a real consumer's build via NuGet), which means it does not flow
+      transitively through the ProjectReference below either — so this project needs its
+      own explicit reference to actually drive the generator (CSharpCompilation,
+      CSharpGeneratorDriver) at a version that understands IIncrementalGenerator. The
+      version is already pinned centrally (Directory.Packages.props, used by
+      DataDictionary.Generator.csproj itself); Workspaces is pinned here via
+      VersionOverride (not a central manifest edit — see the same pattern in
+      DataDictionary.Abstractions.csproj) purely to keep the whole graph on one
+      consistent Microsoft.CodeAnalysis.* version and avoid an NU1608 version-mismatch
+      restore warning (TreatWarningsAsErrors=true repo-wide would turn it into a build
+      failure).
+    -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="4.14.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DataDictionary.Generator\DataDictionary.Generator.csproj" />
+    <!--
+      DataDictionary.Generator.csproj does not reference Abstractions (it only emits
+      fully-qualified source text against it). This test project compiles fixture
+      source that USES [DataDictionary]/[DictionaryValue]/etc. as real C# attributes,
+      so it needs the actual Abstractions assembly on its own reference list.
+    -->
+    <ProjectReference Include="..\..\src\DataDictionary.Abstractions\DataDictionary.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

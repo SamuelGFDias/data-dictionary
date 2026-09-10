@@ -1,0 +1,2 @@
+﻿========== DIAGNOSTICS ==========
+Error DD0007: Enum 'Foo' is decorated with [Flags] and cannot be a data dictionary source; remove [DataDictionary]/[DataDictionaryScan] coverage from it, or remove [Flags] if it is not truly a bit-flag enum

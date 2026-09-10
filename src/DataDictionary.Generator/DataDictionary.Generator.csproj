@@ -2,10 +2,29 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <!--
+      This project emits an IIncrementalGenerator (DataDictionaryIncrementalGenerator)
+      and DiagnosticDescriptor-based diagnostics (DD0001-DD0007), so the SDK's
+      generator-project meta-analyzers (Microsoft.CodeAnalysis.Analyzers) activate
+      automatically. EnforceExtendedAnalyzerRules opts into the additional
+      correctness rules for incremental generators specifically (RS1036) rather than
+      only the base analyzer rules.
+    -->
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      RS2008 (analyzer release tracking) requires these two files for every project
+      that declares DiagnosticDescriptor-based rules (DD0001-DD0007) — see
+      AnalyzerReleases.Unshipped.md for the actual rule catalog.
+    -->
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
   </ItemGroup>
 
 </Project>

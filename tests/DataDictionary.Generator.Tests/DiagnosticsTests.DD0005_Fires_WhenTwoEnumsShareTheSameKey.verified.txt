@@ -1,0 +1,3 @@
+﻿========== DIAGNOSTICS ==========
+Error DD0005: Enum 'Fixture.Diagnostics.DD0005.FirstEnum' resolves to dictionary key 'Same', which is already used by enum 'Fixture.Diagnostics.DD0005.SecondEnum'; every dictionary-eligible enum must have a unique enum_key across the compilation
+Error DD0005: Enum 'Fixture.Diagnostics.DD0005.SecondEnum' resolves to dictionary key 'Same', which is already used by enum 'Fixture.Diagnostics.DD0005.FirstEnum'; every dictionary-eligible enum must have a unique enum_key across the compilation
