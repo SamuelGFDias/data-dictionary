@@ -480,7 +480,7 @@ CI/CD, documentation, and the final constitution-compliance gate.
       `src/DataDictionary.Core`, and `src/DataDictionary.EntityFrameworkCore`, confirming
       the solution builds clean under `TreatWarningsAsErrors=true` (Constitution
       Principle IX).
-- [ ] T080 Run every scenario in `quickstart.md` (A–G) end-to-end against
+- [x] T080 Run every scenario in `quickstart.md` (A–G) end-to-end against
       `samples/Sample.Api` and the full automated test suite, confirming all pass, as the
       final constitution-compliance gate for this feature.
 
