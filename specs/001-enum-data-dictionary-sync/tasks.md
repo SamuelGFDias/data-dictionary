@@ -344,25 +344,25 @@ other row's `updated_at` changes.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T057 [P] [US3] Add a Core unit test asserting an unchanged entry appears in
+- [X] T057 [P] [US3] Add a Core unit test asserting an unchanged entry appears in
       neither `ToInsert` nor `ToUpdate` (verified via `content_hash` comparison) in
       `tests/DataDictionary.Core.Tests/DiffEngineNoOpTests.cs`.
-- [ ] T058 [P] [US3] Add an EF Core integration test for `quickstart.md` Scenario B (one
+- [X] T058 [P] [US3] Add an EF Core integration test for `quickstart.md` Scenario B (one
       member added, restart, exactly one insert, every other row's `updated_at`
       unchanged) in
       `tests/DataDictionary.EntityFrameworkCore.Tests/IdempotentSyncTests.cs`.
 
 ### Implementation for User Story 3
 
-- [ ] T059 [US3] Implement `content_hash` computation over the fields compared for
+- [X] T059 [US3] Implement `content_hash` computation over the fields compared for
       change detection — description, group, sort order, deprecated flag, per
       `data-model.md`'s `content_hash` note and `spec.md` Assumptions — in
       `src/DataDictionary.Core/Sync/DictionaryEntryHasher.cs`.
-- [ ] T060 [US3] Extend the diff engine's update classification (`ToUpdate` populated
+- [X] T060 [US3] Extend the diff engine's update classification (`ToUpdate` populated
       only when `content_hash` differs; unchanged entries recorded in `Unchanged` and
       never written) in `src/DataDictionary.Core/Sync/DictionaryDiffEngine.cs`. (depends
       on T059)
-- [ ] T061 [US3] Implement `IDataDictionaryStore.ApplyAsync` (EF Core) update path,
+- [X] T061 [US3] Implement `IDataDictionaryStore.ApplyAsync` (EF Core) update path,
       writing `updated_at` only for rows actually present in `ToUpdate` — never for
       `Unchanged` rows — in
       `src/DataDictionary.EntityFrameworkCore/EfDataDictionaryStore.cs`. (depends on
