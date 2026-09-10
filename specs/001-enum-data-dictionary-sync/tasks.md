@@ -40,37 +40,37 @@ executed by `/speckit-tasks` itself).
 **Purpose**: Solution and project scaffolding, matching `plan.md`'s Project Structure
 exactly (Constitution Principle II: the TFM split is enforced by project boundaries).
 
-- [ ] T001 Create `DataDictionary.sln` at the repository root, referencing every project
+- [X] T001 Create `DataDictionary.sln` at the repository root, referencing every project
       listed in T002–T009.
-- [ ] T002 [P] Scaffold `src/DataDictionary.Abstractions/DataDictionary.Abstractions.csproj`
+- [X] T002 [P] Scaffold `src/DataDictionary.Abstractions/DataDictionary.Abstractions.csproj`
       targeting `netstandard2.0` only.
-- [ ] T003 [P] Scaffold `src/DataDictionary.Generator/DataDictionary.Generator.csproj`
+- [X] T003 [P] Scaffold `src/DataDictionary.Generator/DataDictionary.Generator.csproj`
       targeting `netstandard2.0` only, referencing `Microsoft.CodeAnalysis.CSharp` with
       `PrivateAssets="all"` (research.md §5).
-- [ ] T004 [P] Scaffold `src/DataDictionary.Core/DataDictionary.Core.csproj` targeting
+- [X] T004 [P] Scaffold `src/DataDictionary.Core/DataDictionary.Core.csproj` targeting
       `net10.0` only, referencing `DataDictionary.Abstractions` — no EF Core, Dapper, or
       any ORM package reference (Constitution Principle III).
-- [ ] T005 [P] Scaffold
+- [X] T005 [P] Scaffold
       `src/DataDictionary.EntityFrameworkCore/DataDictionary.EntityFrameworkCore.csproj`
       targeting `net10.0` only, referencing `DataDictionary.Core`,
       `Microsoft.EntityFrameworkCore`, the SQL Server EF Core provider, and the
       PostgreSQL (Npgsql) EF Core provider.
-- [ ] T006 [P] Scaffold
+- [X] T006 [P] Scaffold
       `tests/DataDictionary.Generator.Tests/DataDictionary.Generator.Tests.csproj`
       referencing xUnit, `Verify.Xunit`, and
       `Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing` (research.md §9).
-- [ ] T007 [P] Scaffold `tests/DataDictionary.Core.Tests/DataDictionary.Core.Tests.csproj`
+- [X] T007 [P] Scaffold `tests/DataDictionary.Core.Tests/DataDictionary.Core.Tests.csproj`
       referencing xUnit and `DataDictionary.Core` only (no database dependency).
-- [ ] T008 [P] Scaffold
+- [X] T008 [P] Scaffold
       `tests/DataDictionary.EntityFrameworkCore.Tests/DataDictionary.EntityFrameworkCore.Tests.csproj`
       referencing xUnit, `Testcontainers.MsSql`, and `Testcontainers.PostgreSql`.
-- [ ] T009 [P] Scaffold `samples/Sample.Api/Sample.Api.csproj` (minimal `net10.0` web app)
+- [X] T009 [P] Scaffold `samples/Sample.Api/Sample.Api.csproj` (minimal `net10.0` web app)
       referencing `DataDictionary.EntityFrameworkCore`.
-- [ ] T010 Create `Directory.Build.props` at the repository root enabling
+- [X] T010 Create `Directory.Build.props` at the repository root enabling
       `Nullable=enable` and `TreatWarningsAsErrors=true` for every project in the
       solution (plan.md Technical Context — "nullable enabled, warnings as errors na
       solução").
-- [ ] T011 [P] Create `Directory.Packages.props` at the repository root enabling central
+- [X] T011 [P] Create `Directory.Packages.props` at the repository root enabling central
       package management (`ManagePackageVersionsCentrally=true`) and pinning every
       dependency version named across T002–T009.
 
