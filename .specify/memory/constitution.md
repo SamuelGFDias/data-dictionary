@@ -71,6 +71,18 @@ and member MUST carry XML documentation comments. Undocumented public API is tre
 incomplete work, not as a follow-up task, because the generated diagnostics and the
 public contract are the primary interface most consumers will read.
 
+### X. Every Pending Item and Technical Debt Becomes an Issue
+Every pending item or piece of technical debt identified while executing work MUST be
+recorded as an issue in the repository — including when it was already resolved at the
+moment it was found (e.g. a design decision made out of necessity, a configuration gap
+filled with a provisional value, or an environment limitation worked around). This
+applies even when the work itself was delivered successfully: the mere existence of a
+non-trivial decision or debt is sufficient reason to open the issue, independent of
+whether the surrounding task succeeded. The issue MUST document what was found, the
+decision or workaround taken, and what remains pending validation or review. Silently
+absorbing a workaround into "done" work, with no trace for a reviewer to follow up on,
+is treated as incomplete work, not as acceptable pragmatism.
+
 ## Technology & Compatibility Constraints
 
 - Target frameworks are fixed per Principle II and MUST NOT be loosened to "multi-target
@@ -119,4 +131,4 @@ Compliance review: every `speckit-plan` and `speckit-tasks` artifact for this pr
 MUST include or reference a constitution-compliance check. Reviewers MUST treat a
 missing or unresolved compliance check as a blocking issue, not a nit.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-10
+**Version**: 1.1.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-10
