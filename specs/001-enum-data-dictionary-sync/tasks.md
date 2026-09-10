@@ -142,52 +142,52 @@ sync behavior exists.
 
 ### Generator (compile-time pipeline + diagnostics)
 
-- [ ] T022 Implement the `IIncrementalGenerator` registration using
+- [X] T022 Implement the `IIncrementalGenerator` registration using
       `ForAttributeWithMetadataName` for `[DataDictionary]`/`[DictionaryValue]`
       (explicit mode), producing the equatable pipeline models from T015, in
       `src/DataDictionary.Generator/DataDictionaryIncrementalGenerator.cs`, per
       `research.md` §3. (depends on T012, T014, T015)
-- [ ] T023 Implement description-precedence resolution (XML doc `<summary>` →
+- [X] T023 Implement description-precedence resolution (XML doc `<summary>` →
       `[Description]` → `[Display(Name=)]` → member name, FR-005) in
       `src/DataDictionary.Generator/DescriptionResolver.cs`. (depends on T022)
-- [ ] T024 Implement convention-mode scanning driven by
+- [X] T024 Implement convention-mode scanning driven by
       `[assembly: DataDictionaryDefaults]` / `[assembly: DataDictionaryScan]` (FR-003,
       FR-004) in `src/DataDictionary.Generator/ConventionModeScanner.cs`. (depends on
       T013, T022, T023)
-- [ ] T025 [P] [Snapshot test] Add generator snapshot tests for the explicit-mode happy
+- [X] T025 [P] [Snapshot test] Add generator snapshot tests for the explicit-mode happy
       path (single enum, single member, each of the four description sources) in
       `tests/DataDictionary.Generator.Tests/HappyPathTests.cs` (Verify +
       SourceGenerators.Testing, research.md §9). Write first so it FAILS before T022/T023
       exist, then confirm green.
-- [ ] T026 [P] [Snapshot test] Add generator snapshot tests for convention mode
+- [X] T026 [P] [Snapshot test] Add generator snapshot tests for convention mode
       (assembly-level defaults + scan, including the `RequireDescription=true` case) in
       `tests/DataDictionary.Generator.Tests/ConventionModeTests.cs`. (depends on T024)
-- [ ] T027 Implement diagnostic **DD0001** (Error — member code unresolvable by any
+- [X] T027 Implement diagnostic **DD0001** (Error — member code unresolvable by any
       configured source) naming the enum and member, in
       `src/DataDictionary.Generator/Diagnostics/DD0001.cs`, per
       `contracts/diagnostics-contract.md`. (depends on T023)
-- [ ] T028 [P] Implement diagnostic **DD0002** (Error — duplicate code within the same
+- [X] T028 [P] Implement diagnostic **DD0002** (Error — duplicate code within the same
       enum) naming the enum and both colliding members, in
       `src/DataDictionary.Generator/Diagnostics/DD0002.cs`.
-- [ ] T029 [P] Implement diagnostic **DD0003** (Error — code exceeds
+- [X] T029 [P] Implement diagnostic **DD0003** (Error — code exceeds
       `MaxCodeLength`) in `src/DataDictionary.Generator/Diagnostics/DD0003.cs`.
-- [ ] T030 [P] Implement diagnostic **DD0004** (Warning — no resolvable description with
+- [X] T030 [P] Implement diagnostic **DD0004** (Warning — no resolvable description with
       `RequireDescription=true`) in `src/DataDictionary.Generator/Diagnostics/DD0004.cs`.
       (depends on T024)
-- [ ] T031 [P] Implement diagnostic **DD0005** (Error — duplicate `enum_key` across two
+- [X] T031 [P] Implement diagnostic **DD0005** (Error — duplicate `enum_key` across two
       enums) in `src/DataDictionary.Generator/Diagnostics/DD0005.cs`.
-- [ ] T032 [P] Implement diagnostic **DD0006** (Warning — two members share the same
+- [X] T032 [P] Implement diagnostic **DD0006** (Warning — two members share the same
       underlying numeric value) in `src/DataDictionary.Generator/Diagnostics/DD0006.cs`.
-- [ ] T033 Implement diagnostic **DD0007** (Error — `[Flags]` enum marked as a
+- [X] T033 Implement diagnostic **DD0007** (Error — `[Flags]` enum marked as a
       dictionary source; the enum MUST be excluded from the emitted manifest per
       `data-model.md`'s `IsFlags` validation rule) in
       `src/DataDictionary.Generator/Diagnostics/DD0007.cs`. (depends on T022)
-- [ ] T034 [P] [Snapshot test] Add one snapshot test per diagnostic DD0001–DD0007 (a
+- [X] T034 [P] [Snapshot test] Add one snapshot test per diagnostic DD0001–DD0007 (a
       positive case where it fires, and a negative case on otherwise-valid input where it
       does not) in `tests/DataDictionary.Generator.Tests/DiagnosticsTests.cs`, asserting
       each message names the enum/member(s) per `contracts/diagnostics-contract.md`'s
       message-content requirement. (depends on T027-T033)
-- [ ] T035 Emit the generated `DataDictionaryManifest.Default` static entry point (per
+- [X] T035 Emit the generated `DataDictionaryManifest.Default` static entry point (per
       `contracts/generated-entrypoints-contract.md`) built entirely from compile-time
       literal data — no reflection — in
       `src/DataDictionary.Generator/ManifestEmitter.cs`. (depends on T022, T023, T024,
@@ -195,29 +195,29 @@ sync behavior exists.
 
 ### Core (DI/config skeleton — diff engine itself is story-specific)
 
-- [ ] T036 Implement `AddDataDictionary(Action<IDataDictionaryBuilder> configure)` and
+- [X] T036 Implement `AddDataDictionary(Action<IDataDictionaryBuilder> configure)` and
       `IDataDictionaryBuilder.AddManifest(DataDictionaryManifest manifest)` in
       `src/DataDictionary.Core/DependencyInjection/DataDictionaryServiceCollectionExtensions.cs`,
       per `contracts/generated-entrypoints-contract.md`. (depends on T016, T020)
-- [ ] T037 Implement `DataDictionaryOptions` resolving the configured `SyncMode`
+- [X] T037 Implement `DataDictionaryOptions` resolving the configured `SyncMode`
       (default `Off`) and `OnBreakingChange` policy (default `Fail`) per `spec.md`
       `## Clarifications`, in `src/DataDictionary.Core/DataDictionaryOptions.cs`.
       (depends on T020)
 
 ### EF Core provider (base mapping only)
 
-- [ ] T038 Implement `ModelBuilder.ApplyDataDictionary()` configuring the
+- [X] T038 Implement `ModelBuilder.ApplyDataDictionary()` configuring the
       `tb_dicionario_dados` / `tb_dicionario_enum` entity mappings — default snake_case
       columns, default table names, configurable per T021 — including the filtered
       unique index on `(enum_key, code)` for `is_active = 1`, in
       `src/DataDictionary.EntityFrameworkCore/ModelBuilderExtensions.cs`, per
       `contracts/generated-entrypoints-contract.md` and `data-model.md`. (depends on
       T017, T021)
-- [ ] T039 Implement the generated `ValueConverter` wiring applied to every business
+- [X] T039 Implement the generated `ValueConverter` wiring applied to every business
       entity property whose CLR type is a marked enum (FR-012) in
       `src/DataDictionary.EntityFrameworkCore/EnumCodeValueConverter.cs`. (depends on
       T016, T038)
-- [ ] T040 [P] [Integration test] Add a Testcontainers-backed test (SQL Server and
+- [X] T040 [P] [Integration test] Add a Testcontainers-backed test (SQL Server and
       PostgreSQL) asserting `ApplyDataDictionary()` creates the expected tables,
       columns, and the filtered unique index, in
       `tests/DataDictionary.EntityFrameworkCore.Tests/SchemaMappingTests.cs`, per
