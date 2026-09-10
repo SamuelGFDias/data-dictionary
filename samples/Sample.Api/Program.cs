@@ -1,5 +1,6 @@
 using DataDictionary.Abstractions;
 using DataDictionary.Abstractions.Configuration;
+using DataDictionary.Core;
 using DataDictionary.Core.DependencyInjection;
 using DataDictionary.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ builder.Services.AddDataDictionary(b => b
     .WithSyncMode(SyncMode.Sync));
 
 builder.Services.AddScoped<IDataDictionaryStore>(sp =>
-    new EfDataDictionaryStore(sp.GetRequiredService<AppDbContext>()));
+    new EfDataDictionaryStore(sp.GetRequiredService<AppDbContext>(), sp.GetRequiredService<DataDictionaryOptions>()));
 
 var app = builder.Build();
 
