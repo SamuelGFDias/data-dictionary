@@ -14,13 +14,18 @@ namespace DataDictionary.Core.Sync;
 /// </summary>
 /// <remarks>
 /// Covers <see cref="SyncMode.Sync"/> (User Story 1 / T046) and
-/// <see cref="SyncMode.ValidateOnly"/> (User Story 2 / T056): both compute the outcome
-/// and apply the breaking-change policy (which may abort boot under the default
-/// <see cref="OnBreakingChange.Fail"/>), but <see cref="SyncMode.ValidateOnly"/> never
-/// calls <see cref="IDataDictionaryStore.ApplyAsync"/>, regardless of the resolved
-/// outcome. <see cref="SyncMode.SyncAndValidate"/> is not implemented yet — it requires
-/// the fail-fast/lock orchestration added by a later user story, and is intentionally
-/// left unhandled here rather than approximated. <see cref="SyncMode.Off"/> is a no-op.
+/// <see cref="SyncMode.ValidateOnly"/> (User Story 2 / T056), which diverge right after
+/// the outcome is computed: <see cref="SyncMode.Sync"/> applies the breaking-change
+/// policy (which may abort boot under the default <see cref="OnBreakingChange.Fail"/>)
+/// and then calls <see cref="IDataDictionaryStore.ApplyAsync"/>, while
+/// <see cref="SyncMode.ValidateOnly"/> instead fails the boot with
+/// <see cref="DataDictionaryValidationException"/> whenever the original, pre-policy
+/// outcome carries ANY divergence — not only breaking changes — per
+/// <c>spec.md</c> User Story 2, Acceptance Scenario 3, and never calls
+/// <see cref="IDataDictionaryStore.ApplyAsync"/> at all. <see
+/// cref="SyncMode.SyncAndValidate"/> is not implemented yet — it requires the
+/// fail-fast/lock orchestration added by a later user story, and is intentionally left
+/// unhandled here rather than approximated. <see cref="SyncMode.Off"/> is a no-op.
 /// </remarks>
 /// <param name="options">The resolved <see cref="DataDictionaryOptions"/>, carrying
 /// every registered manifest, the configured <see cref="SyncMode"/>, and the configured
@@ -74,15 +79,26 @@ public sealed class DataDictionarySynchronizer(
                 var outcome = await _diffEngine.DiffAsync(manifestEnum, currentState, _store, cancellationToken)
                     .ConfigureAwait(false);
 
-                // May throw DataDictionarySyncException under the default Fail policy
-                // — before any write is attempted, for either SyncMode.
-                var resolvedOutcome = _policyEngine.Apply(outcome, _options.OnBreakingChange);
-
                 if (_options.SyncMode == SyncMode.ValidateOnly)
                 {
-                    // Never writes, regardless of the resolved outcome.
+                    // Per spec.md User Story 2, Acceptance Scenario 3: ValidateOnly
+                    // fails the boot on ANY divergence — not only breaking changes —
+                    // checked against the original, pre-policy outcome, before the
+                    // breaking-change policy ever runs. This also covers a
+                    // breaking-changes-only outcome under the default Fail policy, so
+                    // BreakingChangePolicyEngine.Apply's own Fail path never needs to
+                    // run for ValidateOnly. Never writes, regardless of the outcome.
+                    if (DataDictionaryValidationException.HasDivergence(outcome))
+                    {
+                        throw DataDictionaryValidationException.ForDivergence(manifestEnum.EnumKey, outcome);
+                    }
+
                     continue;
                 }
+
+                // May throw DataDictionarySyncException under the default Fail policy
+                // — before any write is attempted.
+                var resolvedOutcome = _policyEngine.Apply(outcome, _options.OnBreakingChange);
 
                 await _store.ApplyAsync(resolvedOutcome, cancellationToken).ConfigureAwait(false);
             }
