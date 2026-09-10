@@ -16,7 +16,7 @@ namespace DataDictionary.Core.Tests;
 public class DiffEngineInsertTests
 {
     [Fact]
-    public void Diff_EmptyCurrentState_FullManifest_EverythingIsInserted()
+    public async Task DiffAsync_EmptyCurrentState_FullManifest_EverythingIsInserted()
     {
         var manifestEnum = new ManifestEnumEntry(
             EnumKey: "RacaCor",
@@ -59,8 +59,9 @@ public class DiffEngineInsertTests
             CatalogEntry: null);
 
         var engine = new DictionaryDiffEngine();
+        var store = new FakeDataDictionaryStore(new Dictionary<(string, string), CodeUsageResult>());
 
-        var outcome = engine.Diff(manifestEnum, currentState);
+        var outcome = await engine.DiffAsync(manifestEnum, currentState, store, CancellationToken.None);
 
         Assert.Equal(manifestEnum.Members.Length, outcome.ToInsert.Count);
 

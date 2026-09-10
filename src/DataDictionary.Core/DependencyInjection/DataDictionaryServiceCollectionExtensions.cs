@@ -44,6 +44,10 @@ public static class DataDictionaryServiceCollectionExtensions
         // The diff engine is stateless and pure; a single shared instance is fine.
         services.AddSingleton<DictionaryDiffEngine>();
 
+        // Likewise stateless (its only state is the injectable warning sink); a single
+        // shared instance is fine.
+        services.AddSingleton<BreakingChangePolicyEngine>();
+
         // Scoped to match the typical lifetime of the consumer-registered
         // IDataDictionaryStore (e.g. one backed by a scoped DbContext).
         services.AddScoped<DataDictionarySynchronizer>();
