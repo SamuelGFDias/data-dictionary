@@ -13,18 +13,21 @@ namespace DataDictionary.Core.Sync;
 /// <c>SynchronizationOutcome</c> section and <c>contracts/store-contract.md</c>.
 /// </summary>
 /// <remarks>
-/// Classifies inserts (User Story 1 / T043) and the two breaking-change divergences
-/// (User Story 2 / T053): a stored, active member whose <c>field_name</c> is absent
-/// from the manifest is routed to <see cref="SynchronizationOutcome.BreakingChanges"/>
+/// Classifies inserts (User Story 1 / T043), the two breaking-change divergences
+/// (User Story 2 / T053), and update/unchanged classification (User Story 3 /
+/// T057–T060): a stored, active member whose <c>field_name</c> is absent from the
+/// manifest is routed to <see cref="SynchronizationOutcome.BreakingChanges"/>
 /// (<see cref="BreakingChangeReason.InUseCodeRemoved"/>) when
 /// <c>IDataDictionaryStore.IsCodeInUseAsync</c> reports the code still in use, or to
 /// <see cref="SynchronizationOutcome.ToDeactivate"/> otherwise; a manifest member whose
 /// resolved <c>code</c> collides with a different, active, stored <c>field_name</c>'s
 /// code is routed to <see cref="SynchronizationOutcome.BreakingChanges"/>
 /// (<see cref="BreakingChangeReason.CodeCollision"/>) instead of being inserted or
-/// updated. Full update/unchanged-field classification for members present in both the
-/// manifest and the store is added by User Story 3 (T057–T059) without changing this
-/// class's public surface.
+/// updated; a manifest member whose <c>field_name</c> already exists in the store is
+/// routed to <see cref="SynchronizationOutcome.ToUpdate"/> when its
+/// <see cref="DictionaryEntryHasher"/>-computed <c>content_hash</c> (over description,
+/// group, sort order, and deprecated flag) differs from the stored row's, or to
+/// <see cref="SynchronizationOutcome.Unchanged"/> otherwise.
 /// </remarks>
 public sealed class DictionaryDiffEngine
 {
@@ -75,8 +78,10 @@ public sealed class DictionaryDiffEngine
             StringComparer.Ordinal);
 
         var toInsert = new List<DictionaryEntry>();
+        var toUpdate = new List<DictionaryEntry>();
         var toDeactivate = new List<DictionaryEntry>();
         var breakingChanges = new List<BreakingChange>();
+        var unchanged = new List<DictionaryEntry>();
 
         foreach (var member in manifestEnum.Members)
         {
@@ -99,11 +104,38 @@ public sealed class DictionaryDiffEngine
                 continue;
             }
 
-            if (currentByFieldName.ContainsKey(member.FieldName))
+            if (currentByFieldName.TryGetValue(member.FieldName, out var storedEntry))
             {
-                // Present in both the manifest and the store, no collision. Full
-                // update-vs-unchanged classification for this case is User Story 3
-                // scope (T057–T059) and is intentionally left unhandled here.
+                // Present in both the manifest and the store, no collision — classify
+                // as update or unchanged via content_hash comparison (FR-016).
+                var manifestHash = DictionaryEntryHasher.Compute(
+                    member.Description,
+                    member.GroupName,
+                    member.SortOrder,
+                    member.IsDeprecated);
+
+                if (!string.Equals(manifestHash, storedEntry.ContentHash, StringComparison.Ordinal))
+                {
+                    toUpdate.Add(new DictionaryEntry
+                    {
+                        EnumKey = storedEntry.EnumKey,
+                        FieldName = storedEntry.FieldName,
+                        Code = storedEntry.Code,
+                        NumericValue = storedEntry.NumericValue,
+                        Description = member.Description,
+                        GroupName = member.GroupName,
+                        IsDeprecated = member.IsDeprecated,
+                        SortOrder = member.SortOrder,
+                        IsActive = storedEntry.IsActive,
+                        ContentHash = manifestHash,
+                        CreatedAt = storedEntry.CreatedAt,
+                    });
+                }
+                else
+                {
+                    unchanged.Add(storedEntry);
+                }
+
                 continue;
             }
 
@@ -118,6 +150,11 @@ public sealed class DictionaryDiffEngine
                 IsDeprecated = member.IsDeprecated,
                 SortOrder = member.SortOrder,
                 IsActive = true,
+                ContentHash = DictionaryEntryHasher.Compute(
+                    member.Description,
+                    member.GroupName,
+                    member.SortOrder,
+                    member.IsDeprecated),
             });
         }
 
@@ -165,9 +202,9 @@ public sealed class DictionaryDiffEngine
 
         return new SynchronizationOutcome(
             ToInsert: toInsert,
-            ToUpdate: [],
+            ToUpdate: toUpdate,
             ToDeactivate: toDeactivate,
             BreakingChanges: breakingChanges,
-            Unchanged: []);
+            Unchanged: unchanged);
     }
 }

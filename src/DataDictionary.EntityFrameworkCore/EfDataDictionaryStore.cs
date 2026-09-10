@@ -17,13 +17,12 @@ namespace DataDictionary.EntityFrameworkCore;
 /// <c>contracts/store-contract.md</c>.
 /// </summary>
 /// <remarks>
-/// This phase (User Story 1, T044/T045) implements <see cref="GetCurrentAsync"/>
-/// and the insert-only path of <see cref="ApplyAsync"/> — enough for a first sync
-/// against an empty database (<c>quickstart.md</c> Scenario A). <see cref="ApplyAsync"/>
-/// throws <see cref="NotSupportedException"/> if handed an outcome carrying updates or
-/// deactivations, since that classification does not exist in the diff engine yet
-/// either. User Story 2 (T052) adds <see cref="IsCodeInUseAsync"/>, which walks the
-/// consumer's own <see cref="DbContext.Model"/> per <c>research.md</c> §7.
+/// <see cref="GetCurrentAsync"/> and <see cref="ApplyAsync"/> support insert and update
+/// (User Story 1, T044/T045; User Story 3, T061). <see cref="ApplyAsync"/> throws
+/// <see cref="NotSupportedException"/> only when handed an outcome carrying
+/// deactivations — that persistence path is implemented in User Story 4. User Story 2
+/// (T052) adds <see cref="IsCodeInUseAsync"/>, which walks the consumer's own
+/// <see cref="DbContext.Model"/> per <c>research.md</c> §7.
 /// <see cref="AcquireLockAsync"/> remains out of scope for this phase (later user
 /// story — concurrent-replica-boot locking) and throws
 /// <see cref="NotImplementedException"/> until then.
@@ -54,11 +53,18 @@ public sealed class EfDataDictionaryStore(DbContext dbContext, DataDictionaryOpt
     {
         ArgumentNullException.ThrowIfNull(enumKey);
 
+        // AsNoTracking: these rows exist only to feed the diff engine, which always
+        // builds brand-new DictionaryEntry instances for ToUpdate. In the real boot
+        // flow the same DbContext is reused across GetCurrentAsync and ApplyAsync, so
+        // leaving these tracked would collide with the diff engine's new instances
+        // sharing the same primary key when ApplyAsync attaches them for update.
         var entries = await _dbContext.Set<DictionaryEntry>()
             .Where(e => e.EnumKey == enumKey)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         var catalogEntry = await _dbContext.Set<DictionaryEnumCatalogEntry>()
+            .AsNoTracking()
             .SingleOrDefaultAsync(e => e.EnumKey == enumKey, cancellationToken);
 
         return new CurrentDictionaryState(enumKey, entries, catalogEntry);
@@ -66,9 +72,9 @@ public sealed class EfDataDictionaryStore(DbContext dbContext, DataDictionaryOpt
 
     /// <inheritdoc/>
     /// <exception cref="NotSupportedException">
-    /// <paramref name="outcome"/> carries any <see cref="SynchronizationOutcome.ToUpdate"/>
-    /// or <see cref="SynchronizationOutcome.ToDeactivate"/> entries — not supported until
-    /// a later user story implements that classification and its persistence.
+    /// <paramref name="outcome"/> carries any <see cref="SynchronizationOutcome.ToDeactivate"/>
+    /// entries — not supported until a later user story (User Story 4) implements that
+    /// persistence path.
     /// </exception>
     public async Task ApplyAsync(
         SynchronizationOutcome outcome,
@@ -76,23 +82,64 @@ public sealed class EfDataDictionaryStore(DbContext dbContext, DataDictionaryOpt
     {
         ArgumentNullException.ThrowIfNull(outcome);
 
-        if (outcome.ToUpdate.Count > 0 || outcome.ToDeactivate.Count > 0)
+        if (outcome.ToDeactivate.Count > 0)
         {
             throw new NotSupportedException(
-                "EfDataDictionaryStore.ApplyAsync currently supports insert-only " +
-                "outcomes (User Story 1 scope). Update and deactivate support land in " +
-                "later user stories.");
+                "EfDataDictionaryStore.ApplyAsync does not yet support deactivate " +
+                "outcomes. Deactivate support lands in a later user story (User Story 4).");
         }
 
-        if (outcome.ToInsert.Count == 0)
+        if (outcome.ToInsert.Count == 0 && outcome.ToUpdate.Count == 0)
         {
             return;
         }
 
-        // A single SaveChangesAsync call commits every ToInsert row for this enum in
-        // one database transaction, satisfying the "apply the whole outcome
-        // atomically per enum" contract.
-        await _dbContext.Set<DictionaryEntry>().AddRangeAsync(outcome.ToInsert, cancellationToken);
+        if (outcome.ToInsert.Count > 0)
+        {
+            await _dbContext.Set<DictionaryEntry>().AddRangeAsync(outcome.ToInsert, cancellationToken);
+        }
+
+        if (outcome.ToUpdate.Count > 0)
+        {
+            var utcNow = DateTimeOffset.UtcNow;
+
+            foreach (var entry in outcome.ToUpdate)
+            {
+                // The diff engine deliberately leaves UpdatedAt unset — persistence is
+                // responsible for stamping it, and only when a compared field actually
+                // changed (FR-016), which is exactly the condition that landed this
+                // entry in ToUpdate in the first place.
+                entry.UpdatedAt = utcNow;
+
+                // The diff engine always builds a brand-new DictionaryEntry instance for
+                // ToUpdate, sharing its composite key with whatever GetCurrentAsync read.
+                // GetCurrentAsync itself reads untracked, but a row inserted by an
+                // earlier ApplyAsync call on this same DbContext instance (e.g. a second
+                // synchronization pass reusing the same scoped context, as a process
+                // restart would if the context outlived it) stays tracked afterwards.
+                // Blindly attaching the new instance would then collide on the key, so
+                // reuse the already-tracked instance's entry when one exists instead of
+                // attaching a second one.
+                var tracked = _dbContext.ChangeTracker.Entries<DictionaryEntry>()
+                    .FirstOrDefault(e =>
+                        string.Equals(e.Entity.EnumKey, entry.EnumKey, StringComparison.Ordinal) &&
+                        string.Equals(e.Entity.FieldName, entry.FieldName, StringComparison.Ordinal));
+
+                if (tracked is not null)
+                {
+                    tracked.CurrentValues.SetValues(entry);
+                    tracked.State = EntityState.Modified;
+                }
+                else
+                {
+                    _dbContext.Set<DictionaryEntry>().Update(entry);
+                }
+            }
+        }
+
+        // A single SaveChangesAsync call commits every ToInsert and ToUpdate row for
+        // this enum in one database transaction, satisfying the "apply the whole
+        // outcome atomically per enum" contract.
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

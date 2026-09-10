@@ -41,7 +41,7 @@ public sealed class ValidateOnlyTests
         IsActive = true,
         IsDeprecated = false,
         SortOrder = 0,
-        ContentHash = "test-content-hash",
+        ContentHash = DictionaryEntryHasher.Compute(Description, GroupName, 0, false),
         CreatedAt = DateTimeOffset.UtcNow,
     };
 

@@ -114,6 +114,7 @@ public class DataDictionarySynchronizerValidateOnlyTests
                     Description = "Cor preta.",
                     IsActive = true,
                     SortOrder = 0,
+                    ContentHash = DictionaryEntryHasher.Compute("Cor preta.", null, 0, false),
                 },
             ],
             CatalogEntry: null);
