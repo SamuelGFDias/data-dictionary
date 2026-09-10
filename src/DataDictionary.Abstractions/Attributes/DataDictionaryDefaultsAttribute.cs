@@ -29,4 +29,12 @@ public sealed class DataDictionaryDefaultsAttribute : Attribute
     /// <see langword="null"/> description. Defaults to <see langword="false"/>.
     /// </summary>
     public bool RequireDescription { get; set; }
+
+    /// <summary>
+    /// The maximum length, in characters, a resolved <c>code</c> may have before the
+    /// DD0003 diagnostic fires. Applies to every member in the compilation — explicit
+    /// mode and convention mode alike, since this is an assembly-level setting rather
+    /// than a per-mode one. Defaults to <c>64</c>.
+    /// </summary>
+    public int MaxCodeLength { get; set; } = 64;
 }

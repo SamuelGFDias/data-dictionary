@@ -3,10 +3,14 @@ using Microsoft.CodeAnalysis;
 namespace DataDictionary.Generator.Diagnostics;
 
 /// <summary>
-/// DD0003 (Error) — a resolved <c>code</c> exceeds the configured maximum length
-/// (<see cref="GeneratorConstants.DefaultMaxCodeLength"/> — see that constant's remarks
-/// for why it is fixed rather than sourced from a public configuration surface in this
-/// implementation). See <c>contracts/diagnostics-contract.md</c> (FR-027).
+/// DD0003 (Error) — a resolved <c>code</c> exceeds the configured maximum length.
+/// Defaults to <see cref="GeneratorConstants.DefaultMaxCodeLength"/> (64), overridable
+/// per assembly via
+/// <see cref="DataDictionary.Abstractions.DataDictionaryDefaultsAttribute.MaxCodeLength"/>
+/// — the override applies to every member in the compilation, explicit mode and
+/// convention mode alike, since it is an assembly-level setting rather than a
+/// convention-only one. See <c>contracts/diagnostics-contract.md</c> (FR-027) and the
+/// <c>2026-09-10</c> entry in <c>spec.md</c>'s <c>## Clarifications</c>.
 /// </summary>
 internal static class DD0003
 {

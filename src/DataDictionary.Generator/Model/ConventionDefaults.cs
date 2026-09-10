@@ -1,3 +1,5 @@
+using DataDictionary.Generator;
+
 namespace DataDictionary.Generator.Model;
 
 /// <summary>
@@ -19,14 +21,24 @@ namespace DataDictionary.Generator.Model;
 /// <see cref="DataDictionary.Generator.DescriptionResolver"/>'s remarks for why this
 /// flag suppresses the final fallback tier rather than merely gating a diagnostic.
 /// </param>
-internal readonly record struct ConventionDefaults(GeneratorCodeSource CodeSource, bool RequireDescription)
+/// <param name="MaxCodeLength">
+/// The maximum length a resolved <c>code</c> may have before DD0003 fires. Unlike
+/// <paramref name="CodeSource"/> and <paramref name="RequireDescription"/>, this applies
+/// to every member in the compilation — explicit mode included — since it is an
+/// assembly-level setting rather than a convention-mode-only one; see
+/// <see cref="DataDictionary.Generator.DictionaryModelBuilder"/>'s <c>ValidateMembers</c>.
+/// </param>
+internal readonly record struct ConventionDefaults(GeneratorCodeSource CodeSource, bool RequireDescription, int MaxCodeLength)
 {
     /// <summary>
-    /// The effective defaults used when a scanned assembly declares
-    /// <c>[assembly: DataDictionaryScan(...)]</c> without an accompanying
-    /// <c>[assembly: DataDictionaryDefaults(...)]</c> — mirrors the source attribute's
-    /// own declared default property values (<c>CodeSource = CodeSource.MemberName</c>,
-    /// <c>RequireDescription = false</c>).
+    /// The effective defaults used when no <c>[assembly: DataDictionaryDefaults(...)]</c>
+    /// is present in the compilation at all — mirrors the source attribute's own declared
+    /// default property values (<c>CodeSource = CodeSource.MemberName</c>,
+    /// <c>RequireDescription = false</c>, <c>MaxCodeLength = 64</c>, sourced from
+    /// <see cref="GeneratorConstants.DefaultMaxCodeLength"/>).
     /// </summary>
-    internal static ConventionDefaults Default { get; } = new(GeneratorCodeSource.MemberName, RequireDescription: false);
+    internal static ConventionDefaults Default { get; } = new(
+        GeneratorCodeSource.MemberName,
+        RequireDescription: false,
+        MaxCodeLength: GeneratorConstants.DefaultMaxCodeLength);
 }

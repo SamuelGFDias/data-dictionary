@@ -29,6 +29,30 @@
   `enum_key`, `field_name`, `code`, `numeric_value`, `is_active`), with default table
   names `tb_dicionario_dados` and `tb_dicionario_enum` in the database's default schema.
   *(Default value on a public configuration option; flagged for human confirmation.)*
+- Q: What is the out-of-the-box default maximum `code` length (FR-027, DD0003) when a
+  developer does not explicitly configure it, and is it configurable at all? → A:
+  **64 characters** by default, exposed as a public configuration surface —
+  `DataDictionaryDefaultsAttribute.MaxCodeLength` — rather than a fixed constant. The
+  configured value applies to the whole compilation (every member DD0003 validates,
+  whether the owning enum is reached through explicit `[DataDictionary]`/`[DictionaryValue]`
+  attributes or through convention mode's `[assembly: DataDictionaryScan]`), because it is
+  an assembly-level setting, not a per-mode one. When no `[assembly: DataDictionaryDefaults]`
+  is present in the compilation at all, the 64-character default applies to every member,
+  explicit mode included.
+- Q: Is the description-fallback-to-member-name behavior (the last tier of FR-005's
+  precedence chain) always available, or can it be suppressed? → A: It is **suppressed**
+  for members and enums governed by convention mode (`[assembly: DataDictionaryScan]`)
+  when `RequireDescription=true`. Taken literally, FR-005's four-tier chain can never
+  leave a description unresolved — a symbol always has a C# name — which would make
+  DD0004 ("no resolvable description with `RequireDescription=true`") permanently
+  unreachable. The member-name tier is therefore a convenience fallback for the common
+  case, suppressed only when a convention-mode consumer opts into
+  `RequireDescription=true`; at that point a bare repeat of the identifier no longer
+  counts as a real description, resolution stops after `[Display]`, and DD0004 fires when
+  nothing else resolved. This is the behavior `DescriptionResolver` and
+  `DictionaryModelBuilder`'s `allowMemberNameFallback`/`allowEnumNameFallback` already
+  implement; this entry formalizes it as an intentional decision rather than leaving it as
+  implementation-only reasoning.
 
 ## User Scenarios & Testing *(mandatory)*
 

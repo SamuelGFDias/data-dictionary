@@ -16,6 +16,16 @@ bump; wording of the message text may improve within a MINOR/PATCH release.
 | DD0007 | Error | A `[Flags]` enum is marked as a dictionary source. | FR-031, spec Edge Cases |
 | DD0008 | Error | A member's resolved `code` changed relative to a versioned baseline, for an otherwise-existing member. | Explicitly listed as a NON-OBJETIVO for this MVP (no baseline lock file ships); **this diagnostic ID is reserved but MUST NOT be implemented to fire in this feature** — see `plan.md` Complexity Tracking / Out of Scope note. |
 
+## Note on DD0003's configured `MaxCodeLength`
+
+`MaxCodeLength` defaults to 64 and is a public configuration surface —
+`DataDictionaryDefaultsAttribute.MaxCodeLength` — not a fixed constant. The configured
+value is an assembly-level setting: it applies to every member DD0003 validates in the
+compilation, whether the owning enum is reached through explicit
+`[DataDictionary]`/`[DictionaryValue]` attributes or through convention mode's
+`[assembly: DataDictionaryScan]`. See the `2026-09-10` entry in `spec.md`'s
+`## Clarifications`.
+
 ## MVP scope note on DD0008
 
 The feature's own "Out of Scope (MVP)" section explicitly excludes a versioned baseline

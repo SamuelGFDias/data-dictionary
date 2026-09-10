@@ -14,19 +14,21 @@ internal static class ConventionModeScanner
 {
     private const string CodeSourcePropertyName = "CodeSource";
     private const string RequireDescriptionPropertyName = "RequireDescription";
+    private const string MaxCodeLengthPropertyName = "MaxCodeLength";
 
     /// <summary>
     /// Reads a single <c>[assembly: DataDictionaryDefaults(...)]</c> application's
-    /// <c>CodeSource</c> and <c>RequireDescription</c> named arguments (named arguments
-    /// not present on the attribute application keep the source attribute's own
-    /// declared default: <c>CodeSource.MemberName</c>, <c>RequireDescription = false</c>
-    /// — <c>DescriptionFrom</c> is intentionally not read here, see
-    /// <see cref="DescriptionResolver"/>'s remarks).
+    /// <c>CodeSource</c>, <c>RequireDescription</c> and <c>MaxCodeLength</c> named
+    /// arguments (named arguments not present on the attribute application keep the
+    /// source attribute's own declared default: <c>CodeSource.MemberName</c>,
+    /// <c>RequireDescription = false</c>, <c>MaxCodeLength = 64</c> — <c>DescriptionFrom</c>
+    /// is intentionally not read here, see <see cref="DescriptionResolver"/>'s remarks).
     /// </summary>
     internal static ConventionDefaults ReadDefaults(AttributeData attribute)
     {
         var codeSource = GeneratorCodeSource.MemberName;
         var requireDescription = false;
+        var maxCodeLength = GeneratorConstants.DefaultMaxCodeLength;
 
         foreach (var named in attribute.NamedArguments)
         {
@@ -42,9 +44,13 @@ internal static class ConventionModeScanner
             {
                 requireDescription = requireDescriptionValue;
             }
+            else if (named.Key == MaxCodeLengthPropertyName && named.Value.Value is int maxCodeLengthValue)
+            {
+                maxCodeLength = maxCodeLengthValue;
+            }
         }
 
-        return new ConventionDefaults(codeSource, requireDescription);
+        return new ConventionDefaults(codeSource, requireDescription, maxCodeLength);
     }
 
     /// <summary>

@@ -203,12 +203,13 @@ internal static class DictionaryModelBuilder
             sortOrder++;
         }
 
-        return ValidateMembers(enumSymbol.Name, resolvedMembers.ToImmutable(), diagnostics);
+        return ValidateMembers(enumSymbol.Name, resolvedMembers.ToImmutable(), defaults.MaxCodeLength, diagnostics);
     }
 
     private static ImmutableArray<GeneratorMemberModel> ValidateMembers(
         string enumName,
         ImmutableArray<GeneratorMemberModel> members,
+        int maxCodeLength,
         ImmutableArray<Diagnostic>.Builder diagnostics)
     {
         var survivors = ImmutableArray.CreateBuilder<GeneratorMemberModel>();
@@ -224,9 +225,9 @@ internal static class DictionaryModelBuilder
                 continue;
             }
 
-            if (member.Code.Length > GeneratorConstants.DefaultMaxCodeLength)
+            if (member.Code.Length > maxCodeLength)
             {
-                diagnostics.Add(DD0003.Create(member.Location, enumName, member.FieldName, member.Code, GeneratorConstants.DefaultMaxCodeLength));
+                diagnostics.Add(DD0003.Create(member.Location, enumName, member.FieldName, member.Code, maxCodeLength));
                 continue;
             }
 

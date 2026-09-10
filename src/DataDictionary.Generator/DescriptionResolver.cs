@@ -23,7 +23,8 @@ namespace DataDictionary.Generator;
 /// when the caller explicitly opts into <c>RequireDescription = true</c> — at that
 /// point a bare repeat of the C# identifier no longer counts as "a real description",
 /// so resolution stops after <c>[Display]</c> and reports <see langword="null"/>
-/// instead, letting DD0004 fire.
+/// instead, letting DD0004 fire. Formalized as a decision (not just an implementation
+/// detail) in the <c>2026-09-10</c> entry of <c>spec.md</c>'s <c>## Clarifications</c>.
 /// </para>
 /// <para>
 /// <b>Why <c>DataDictionaryDefaultsAttribute.DescriptionFrom</c> is not consulted

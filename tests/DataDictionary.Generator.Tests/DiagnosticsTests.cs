@@ -138,6 +138,48 @@ public class DiagnosticsTests
         return Verifier.Verify(GeneratorTestHelper.Run(source));
     }
 
+    [Fact]
+    public Task DD0003_FiresWithCustomLimit_WhenMaxCodeLengthConfigured_InConventionMode()
+    {
+        const string source = """
+            using DataDictionary.Abstractions;
+
+            [assembly: DataDictionaryDefaults(MaxCodeLength = 8)]
+            [assembly: DataDictionaryScan("Fixture.Diagnostics.DD0003CustomConvention")]
+
+            namespace Fixture.Diagnostics.DD0003CustomConvention;
+
+            public enum Foo
+            {
+                [DictionaryValue("TooLongCode")]
+                A,
+            }
+            """;
+
+        return Verifier.Verify(GeneratorTestHelper.Run(source));
+    }
+
+    [Fact]
+    public Task DD0003_FiresWithCustomLimit_WhenMaxCodeLengthConfigured_InExplicitModeWithoutScan()
+    {
+        const string source = """
+            using DataDictionary.Abstractions;
+
+            [assembly: DataDictionaryDefaults(MaxCodeLength = 8)]
+
+            namespace Fixture.Diagnostics.DD0003CustomExplicit;
+
+            [DataDictionary("Foo")]
+            public enum Foo
+            {
+                [DictionaryValue("TooLongCode")]
+                A,
+            }
+            """;
+
+        return Verifier.Verify(GeneratorTestHelper.Run(source));
+    }
+
     // ---- DD0004: no resolvable description with RequireDescription = true -----------
 
     [Fact]
