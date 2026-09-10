@@ -290,42 +290,42 @@ write occurs.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T048 [P] [US2] Add a Core unit test classifying a removed-but-in-use member into
+- [X] T048 [P] [US2] Add a Core unit test classifying a removed-but-in-use member into
       `BreakingChanges` (never `ToDeactivate`) in
       `tests/DataDictionary.Core.Tests/DiffEngineBreakingChangeTests.cs`.
-- [ ] T049 [P] [US2] Add a Core unit test classifying a code-collision (an existing
+- [X] T049 [P] [US2] Add a Core unit test classifying a code-collision (an existing
       `field_name`'s code changed to collide with another entry) into
       `BreakingChanges`, never auto-applied, in
       `tests/DataDictionary.Core.Tests/DiffEngineCollisionTests.cs`.
-- [ ] T050 [P] [US2] Add an EF Core integration test for `quickstart.md` Scenario C
+- [X] T050 [P] [US2] Add an EF Core integration test for `quickstart.md` Scenario C
       (in-use code removed → boot fails naming enum, member, code, and the referencing
       business table) in
       `tests/DataDictionary.EntityFrameworkCore.Tests/BreakingChangeTests.cs`.
-- [ ] T051 [P] [US2] Add an EF Core integration test for `quickstart.md` Scenario E
+- [X] T051 [P] [US2] Add an EF Core integration test for `quickstart.md` Scenario E
       (`ValidateOnly` + divergence → boot fails, database left byte-for-byte unchanged)
       in `tests/DataDictionary.EntityFrameworkCore.Tests/ValidateOnlyTests.cs`.
 
 ### Implementation for User Story 2
 
-- [ ] T052 [US2] Implement `IDataDictionaryStore.IsCodeInUseAsync` (EF Core) by walking
+- [X] T052 [US2] Implement `IDataDictionaryStore.IsCodeInUseAsync` (EF Core) by walking
       `DbContext.Model` for properties typed as the marked enum and querying for the
       retired numeric/code value, returning the referencing table name(s), per
       `research.md` §7, in
       `src/DataDictionary.EntityFrameworkCore/EfDataDictionaryStore.cs`. (depends on
       T044)
-- [ ] T053 [US2] Extend the diff engine with breaking-change classification (removed-
+- [X] T053 [US2] Extend the diff engine with breaking-change classification (removed-
       and-in-use; code collision) populating `SynchronizationOutcome.BreakingChanges` in
       `src/DataDictionary.Core/Sync/DictionaryDiffEngine.cs`. (depends on T043, T052)
-- [ ] T054 [US2] Implement the `OnBreakingChange` policy engine (`Fail` aborts boot
+- [X] T054 [US2] Implement the `OnBreakingChange` policy engine (`Fail` aborts boot
       before any write; `Warn` logs and continues; `Ignore` silently skips the breaking
       entries; default `Fail`) in
       `src/DataDictionary.Core/Sync/BreakingChangePolicyEngine.cs`. (depends on T020,
       T053)
-- [ ] T055 [US2] Implement the fail-fast exception/message construction naming the
+- [X] T055 [US2] Implement the fail-fast exception/message construction naming the
       enum, member, code, and referencing table (in-use case) or colliding field name
       (collision case) in `src/DataDictionary.Core/Sync/DataDictionarySyncException.cs`.
       (depends on T054)
-- [ ] T056 [US2] Implement `ValidateOnly` mode in the startup synchronization
+- [X] T056 [US2] Implement `ValidateOnly` mode in the startup synchronization
       orchestrator (compute the outcome, apply the breaking-change policy, but never
       call `ApplyAsync`) in `src/DataDictionary.Core/Sync/DataDictionarySynchronizer.cs`.
       (depends on T046, T054)
