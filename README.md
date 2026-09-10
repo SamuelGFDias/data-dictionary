@@ -103,9 +103,13 @@ enquanto as bibliotecas de runtime usam recursos modernos do .NET.
 
 ### Status do projeto
 
-O projeto está em desenvolvimento ativo sob GitHub Spec Kit, na feature
-`001-enum-data-dictionary-sync`, e ainda não foi publicado no NuGet. Para o roadmap
-detalhado e o escopo completo, consulte o Wiki do repositório:
+A feature `001-enum-data-dictionary-sync` está **completa**: as 8 fases do roadmap foram
+todas concluídas, a suíte de testes passa integralmente (58/58), o build está limpo
+sem warnings (TreatWarningsAsErrors=true), e o sistema foi validado ponta a ponta contra
+bancos de dados reais via `samples/Sample.Api`. A primeira release será publicada no NuGet
+automaticamente por meio de uma tag de versão (`vX.Y.Z`), disparando o workflow
+`.github/workflows/release.yml`. Para o roadmap detalhado e o escopo completo, consulte o
+Wiki do repositório:
 [https://github.com/SamuelGFDias/data-dictionary/wiki](https://github.com/SamuelGFDias/data-dictionary/wiki).
 
 ### Escopo resumido
@@ -232,9 +236,12 @@ the runtime libraries use modern .NET features.
 
 ### Project status
 
-The project is under active development using GitHub Spec Kit, on feature
-`001-enum-data-dictionary-sync`, and has not yet been published to NuGet. For the detailed
-roadmap and full scope, see the repository Wiki:
+Feature `001-enum-data-dictionary-sync` is **complete**: all 8 phases of the roadmap are
+finished, the test suite passes in full (58/58), the build is clean with no warnings
+(TreatWarningsAsErrors=true), and the system has been validated end-to-end against real
+databases via `samples/Sample.Api`. The first release will be published to NuGet
+automatically via a version tag (`vX.Y.Z`), triggering the `.github/workflows/release.yml`
+workflow. For the detailed roadmap and full scope, see the repository Wiki:
 [https://github.com/SamuelGFDias/data-dictionary/wiki](https://github.com/SamuelGFDias/data-dictionary/wiki).
 
 ### Scope summary
