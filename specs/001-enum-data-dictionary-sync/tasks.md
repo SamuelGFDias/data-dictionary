@@ -240,11 +240,11 @@ value, and description.
 
 > Write these tests FIRST; confirm they FAIL before the implementation tasks below.
 
-- [ ] T041 [P] [US1] Add a Core unit test for the diff engine's insert-only
+- [X] T041 [P] [US1] Add a Core unit test for the diff engine's insert-only
       classification (empty `CurrentDictionaryState`, full manifest → every member in
       `ToInsert`; nothing in `ToUpdate`/`ToDeactivate`/`BreakingChanges`) in
       `tests/DataDictionary.Core.Tests/DiffEngineInsertTests.cs`.
-- [ ] T042 [P] [US1] Add an EF Core integration test (SQL Server and PostgreSQL) for
+- [X] T042 [P] [US1] Add an EF Core integration test (SQL Server and PostgreSQL) for
       `quickstart.md` Scenario A — empty database, `RacaCor` enum with `Branca = 1` /
       code `B`, `Sync` mode, asserting the exact resulting row `RacaCor | Branca | B | 1
       | Branca` — in
@@ -252,22 +252,22 @@ value, and description.
 
 ### Implementation for User Story 1
 
-- [ ] T043 [US1] Implement the diff engine's insert classification (`ToInsert`
+- [X] T043 [US1] Implement the diff engine's insert classification (`ToInsert`
       population by comparing manifest field names against `CurrentDictionaryState`) in
       `src/DataDictionary.Core/Sync/DictionaryDiffEngine.cs`. (depends on T018, T041)
-- [ ] T044 [US1] Implement `IDataDictionaryStore.GetCurrentAsync` (EF Core), reading
+- [X] T044 [US1] Implement `IDataDictionaryStore.GetCurrentAsync` (EF Core), reading
       existing `DictionaryEntry` / `DictionaryEnumCatalogEntry` rows for one `enum_key`,
       in `src/DataDictionary.EntityFrameworkCore/EfDataDictionaryStore.cs`. (depends on
       T038)
-- [ ] T045 [US1] Implement `IDataDictionaryStore.ApplyAsync` (EF Core) for the
+- [X] T045 [US1] Implement `IDataDictionaryStore.ApplyAsync` (EF Core) for the
       insert-only case — atomic insert of every `ToInsert` entry per enum — in
       `src/DataDictionary.EntityFrameworkCore/EfDataDictionaryStore.cs`. (depends on
       T044)
-- [ ] T046 [US1] Implement the startup synchronization orchestrator's `Sync`-mode path
+- [X] T046 [US1] Implement the startup synchronization orchestrator's `Sync`-mode path
       (compute the outcome via the diff engine, then call `ApplyAsync`) in
       `src/DataDictionary.Core/Sync/DataDictionarySynchronizer.cs`. (depends on T036,
       T037, T043, T045)
-- [ ] T047 [US1] Wire `samples/Sample.Api` with the `RacaCor` enum, the generated
+- [X] T047 [US1] Wire `samples/Sample.Api` with the `RacaCor` enum, the generated
       `AddDataDictionary`/`AddManifest`/`ApplyDataDictionary()` calls, and `SyncMode.Sync`
       configured explicitly, per `quickstart.md` Scenario A, in
       `samples/Sample.Api/Program.cs` and `samples/Sample.Api/Enums/RacaCor.cs`.
